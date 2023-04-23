@@ -82,6 +82,8 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
                 out, _,rec = model(batch, record = True)
                 peaks = out.max(1)[0]
                 pred = peaks.argmax(1).detach().to(training_params["device"])
+                loss = criterion(peaks, target)
+                test_loss += loss.item()/training_params["Num_Datas"]
                 test_preds += pred.detach().cpu().numpy().tolist()
                 test_targets += target.detach().cpu().numpy().tolist()
         f1 = f1_score(test_targets, test_preds, average="macro")
@@ -89,8 +91,8 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
         test_p, test_r,_,_ =  precision_recall_fscore_support(
             test_targets, test_preds, labels=np.arange(dataset_params["CLASSES"])
         )
-        print(f"Val Precision = {test_p}, Recall = {test_r}")
+        print(f"Val Loss = {test_loss}, Val Precision = {test_p}, Recall = {test_r}")
         print(f"Val Epoch = {epoch+1}, bestf1score = {best_val_f1}, f1score = {f1}")
         if f1 > best_val_f1:
             best_val_f1 = f1
-            model.save("models/model_best.json")
+            model.save("output/model_best.json")

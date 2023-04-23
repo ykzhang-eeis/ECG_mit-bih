@@ -25,6 +25,7 @@ from encode import sigma_delta_encoding, BSA_encoding, BSA_decoding
 from params import *
 from dataloader import *
 from model_train import model_train
+from model.my_model import My_net
 # - Pretty printing
 try:
     from rich import print
@@ -44,7 +45,7 @@ def main():
     X_data, Y_data = loadData()
     print(X_data.shape, Y_data.shape)
     print("data ok!!!")
-    X_data = np.reshape(X_data, (-1, 300)) # 将shape从(63170,300,1)转变为(63170,300)
+    X_data = np.reshape(X_data, (-1, 300)) # 将shape从(286892,300,1)转变为(286892,300)
     print(X_data.shape, Y_data.shape)
     # pd.DataFrame(X_train).to_csv('X_train.csv')
     # pd.DataFrame(X_test).to_csv('X_test.csv')
@@ -60,7 +61,10 @@ def main():
     train_dataloader = DataLoader(train_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=16)
     val_dataloader = DataLoader(val_dataset, batch_size=training_params["Batch_Size"], num_workers=16)
     test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], num_workers=16)
-    model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
+    # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
+    model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=300))
+    # model_train(train_dataloader, test_dataloader, WaveSenseNet(dilations=[2, 32],n_classes=dataset_params["CLASSES"],n_channels_in=300))
+    # model_train(train_dataloader, test_dataloader,My_net)
 
 if __name__ == '__main__':
     main()

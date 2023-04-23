@@ -39,10 +39,18 @@ warnings.filterwarnings('ignore')
 
 device = "cuda:2" if torch.cuda.is_available() else "cpu"
 
+NUM_TAPS = 11 # 数字低通滤波器的阶数，也就是滤波器的长度。
+CUT_OFF_FREQ = 15 # 数字低通滤波器的截止频率，单位为赫兹。
+    # 函数生成一个数字低通滤波器的系数，其中NUM_TAPS是滤波器的阶数，cutoff是截止频率，fs是采样率。
+    # 使用dlti()函数创建一个数字系统，其中第一个参数是滤波器的系数，第二个参数是系统的初始状态，第三个参数是系统的采样时间。
+dlti_filter = signal.dlti(signal.firwin(NUM_TAPS, cutoff=CUT_OFF_FREQ, fs=3600.0), [1] + [0] * 10, 1)
+    # signal.dimpulse(dlti_filter, n=NUM_TAPS)：使用dimpulse()函数生成数字系统的单位脉冲响应，其中dlti_filter是一个数字系统，n是要生成的单位脉冲响应的长度。
+t, imp = signal.dimpulse(dlti_filter, n=NUM_TAPS)
+
 mul = {}
 sigma = {}
 data = {}
-def BSA(input, filter, threshold, channels_num=1):
+def BSA(input, filter=np.squeeze(imp), threshold=0, channels_num=1):
     
     data = input.copy()
     output = np.zeros(shape=(data.shape[0], data.shape[1]))
@@ -73,7 +81,7 @@ def BSA(input, filter, threshold, channels_num=1):
     print("BSA编码结束：形状为：",output.shape)
     return output
 
-def decoding(spikings, filter):
+def decoding(spikings, filter=np.squeeze(imp)):
     output = np.zeros(shape=(spikings.shape[0], spikings.shape[1]))
     s = 0
     for channel in range(spikings.shape[0]):
@@ -102,14 +110,14 @@ Voltage_Partitions = 16
 # Epoch
 Num_Epochs = 200
 # Batch_size
-Batch_Size = 1280
+Batch_Size = 64
 # lr
 Learning_Rate = 1e-3
 # 定义正则化项的系数
 lambda_reg = 0.001
 # 传入的数据总数
 # Num_Datas = 90242 # X_data.shape[0] = 90242
-Num_Datas = 256
+Num_Datas = 640
 
 # 小波去噪预处理
 def denoise(data):
@@ -146,12 +154,12 @@ def getDataSet(number, X_data, Y_data):
         wfdb.rdrecord()可以从PhysioNet数据库（或WFDB格式的本地文件）中读取记录数据，并将其返回为一个Record对象
         Record对象包含多个属性，包括信号数据（以Numpy数组的形式存储）和有关记录元数据的信息（例如记录名称、采样率、信号标准化值等）。
     """
-    record = wfdb.rdrecord('mit-bih-arrhythmia-database-1.0.0/' + number, channel_names=['MLII'])
+    record = wfdb.rdrecord('Dataset/mit-bih-arrhythmia-database-1.0.0/' + number, channel_names=['MLII'])
     data = record.p_signal.flatten() # 将(650000,1)转为(650000, )
     rdata = denoise(data=data)
 
     # 获取心电数据记录中R波的位置和对应的标签
-    annotation = wfdb.rdann('mit-bih-arrhythmia-database-1.0.0/' + number, 'atr')
+    annotation = wfdb.rdann('Dataset/mit-bih-arrhythmia-database-1.0.0/' + number, 'atr')
     Rlocation = annotation.sample # shape为(2274,)
     Rclass = annotation.symbol # 长度为2274
 
@@ -249,7 +257,8 @@ class ECG_Dataset(Dataset):
         for i in range(Num_Datas):
             x_data_row_i = np.array(X_data)[i,:]
             x_data_row_i_norm = Z_Score_norm(x_data_row_i)
-            key = sigma_delta_encoding(x_data_row_i_norm, Time_Partitions, Voltage_Partitions)
+            # key = sigma_delta_encoding(x_data_row_i_norm, Time_Partitions, Voltage_Partitions)
+            key = torch.tensor(BSA(x_data_row_i_norm.reshape(1,-1)))
             # plt.figure()
             # TSEvent.from_raster(torch.transpose(key,0,1), dt=1e-3).plot()
             # plt.show()
@@ -328,13 +337,7 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
 
 def main():
 
-    NUM_TAPS = 11 # 数字低通滤波器的阶数，也就是滤波器的长度。
-    CUT_OFF_FREQ = 15 # 数字低通滤波器的截止频率，单位为赫兹。
-    # 函数生成一个数字低通滤波器的系数，其中NUM_TAPS是滤波器的阶数，cutoff是截止频率，fs是采样率。
-    # 使用dlti()函数创建一个数字系统，其中第一个参数是滤波器的系数，第二个参数是系统的初始状态，第三个参数是系统的采样时间。
-    dlti_filter = signal.dlti(signal.firwin(NUM_TAPS, cutoff=CUT_OFF_FREQ, fs=150.0), [1] + [0] * 10, 1)
-    # signal.dimpulse(dlti_filter, n=NUM_TAPS)：使用dimpulse()函数生成数字系统的单位脉冲响应，其中dlti_filter是一个数字系统，n是要生成的单位脉冲响应的长度。
-    t, imp = signal.dimpulse(dlti_filter, n=NUM_TAPS)
+    
 
     X_data, Y_data = loadData()
     print(X_data.shape, Y_data.shape)
@@ -367,7 +370,8 @@ def main():
     train_dataloader = DataLoader(train_dataset, batch_size=Batch_Size, shuffle=True, num_workers=16)
     val_dataloader = DataLoader(val_dataset, batch_size=Batch_Size, num_workers=16)
     test_dataloader = DataLoader(test_dataset, batch_size=Batch_Size, num_workers=16)
-    model_train(train_dataloader, test_dataloader, SynNet(n_classes=CLASSES,n_channels=Time_Partitions))
+    # model_train(train_dataloader, test_dataloader, SynNet(n_classes=CLASSES,n_channels=Time_Partitions))
+    # model_train(train_dataloader, test_dataloader, SynNet(n_classes=CLASSES,n_channels=300))
 
 if __name__ == '__main__':
     main()

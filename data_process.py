@@ -3,6 +3,7 @@ import numpy as np
 import wfdb
 import pywt
 from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 from collections import Counter
 try:
     from rich import print
@@ -92,8 +93,15 @@ def loadData():
     print("Original dataset shape: {}".format(Counter(lableSet)))
 
     # 过采样
-    ros = RandomOverSampler(random_state=0)
-    X_resampled, y_resampled = ros.fit_resample(dataSet, lableSet)
+    # ros = RandomOverSampler(random_state=0)
+    # X_resampled, y_resampled = ros.fit_resample(dataSet, lableSet)
+
+    # 欠采样
+    rus = RandomUnderSampler(random_state=0)
+    # normal_samples = 9600
+    # abnormal_samples = 4800
+    # rus = RandomUnderSampler(sampling_strategy={0:normal_samples, 1:abnormal_samples, 2:abnormal_samples, 3:abnormal_samples}, random_state=0)
+    X_resampled, y_resampled = rus.fit_resample(dataSet, lableSet)
 
     # 类别均衡后的样本分布情况
     print("Resampled dataset shape: {}".format(Counter(y_resampled)))
