@@ -8,9 +8,9 @@ dataset_params = {
 }
 
 training_params = {
-    "Num_Datas": 6400, # 传入的数据总数X_data.shape[0] = 90242(过采样之前，过采样之后为286892)
-    "Num_Epochs": 360,
-    "Batch_Size": 128,
+    "Num_Datas": 12800, # 传入的数据总数X_data.shape[0] = 90242(过采样之前，过采样之后为286892)
+    "Num_Epochs": 240,
+    "Batch_Size": 1280,
     "Learning_Rate": 1e-3,
     "lambda_reg": 0.001, # 定义正则化项的系数
     "device": "cuda:2" if torch.cuda.is_available() else "cpu",

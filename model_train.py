@@ -37,7 +37,9 @@ warnings.filterwarnings('ignore')
 
 def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
     model.to(training_params["device"])
-    criterion = CrossEntropyLoss()
+    class_weights = torch.FloatTensor([4.0, 1.0, 4.0, 1.0]).to(training_params["device"])
+    criterion = CrossEntropyLoss(weight=class_weights)
+    # criterion = CrossEntropyLoss()
     opt = Adam(model.parameters().astorch(), lr=training_params["Learning_Rate"])
     best_val_f1 = 0
     for epoch in range(training_params["Num_Epochs"]):
