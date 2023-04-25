@@ -5,11 +5,13 @@ import pywt
 import pandas as pd
 import matplotlib.pyplot as plt
 import tqdm
+import json
 
 from torch.optim import Adam
 from torch.nn import CrossEntropyLoss, MSELoss
 from torch.utils.data import Dataset, DataLoader, random_split
 from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion_matrix
+from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 from collections import Counter
 from scipy import signal
@@ -22,6 +24,7 @@ from rockpool.nn.networks import SynNet,WaveSenseNet
 from rockpool.nn.combinators import Sequential, Residual
 from rockpool.transform import quantize_methods as q
 from pathlib import Path
+from params import *
 from rockpool.devices import xylo as x
 
 # - Pretty printing
@@ -37,7 +40,8 @@ from IPython.display import Image
 import warnings
 warnings.filterwarnings('ignore')
 
-device = "cuda:2" if torch.cuda.is_available() else "cpu"
+# device = "cuda:2" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 
 NUM_TAPS = 11 # 数字低通滤波器的阶数，也就是滤波器的长度。
 CUT_OFF_FREQ = 15 # 数字低通滤波器的截止频率，单位为赫兹。
@@ -78,7 +82,6 @@ def BSA(input, filter=np.squeeze(imp), threshold=0, channels_num=1):
             else:
                 output[channel][i] = 0
     output = np.array(output)
-    print("BSA编码结束：形状为：",output.shape)
     return output
 
 def decoding(spikings, filter=np.squeeze(imp)):
@@ -102,13 +105,13 @@ def decoding(spikings, filter=np.squeeze(imp)):
 # 测试集在数据集中所占的比例
 RATIO = 0.3
 # 数据分类类别个数
-CLASSES = 3
+CLASSES = 4
 # ECG信号时间轴分割个数，需要被300整除
-Time_Partitions = 30
+Time_Partitions = 15
 # ECG信号幅值分割个数
 Voltage_Partitions = 16
 # Epoch
-Num_Epochs = 200
+Num_Epochs = 100
 # Batch_size
 Batch_Size = 64
 # lr
@@ -118,7 +121,6 @@ lambda_reg = 0.001
 # 传入的数据总数
 # Num_Datas = 90242 # X_data.shape[0] = 90242
 Num_Datas = 640
-
 # 小波去噪预处理
 def denoise(data):
     coeffs = pywt.wavedec(data=data, wavelet='db5', level=9)
@@ -144,8 +146,8 @@ def denoise(data):
 def getDataSet(number, X_data, Y_data):
     # ecgClassSet = ['N', 'A', 'V', 'L', 'R']
     # 正常心电(N)、左束支阻滞(L)、右束支阻滞(R)及室性早搏(V)四种心拍类型
-    # ecgClassSet = ['N', 'L', 'R', 'V']
-    ecgClassSet = ['L', 'R', 'V']
+    ecgClassSet = ['N', 'L', 'R', 'V']
+    # ecgClassSet = ['L', 'R', 'V']
     
 
     # 读取心电数据记录
@@ -184,7 +186,6 @@ def getDataSet(number, X_data, Y_data):
     return
 
 
-# 加载数据集并进行预处理
 def loadData():
     numberSet = ['100', '101', '103', '105', '106', '107', '108', '109', '111', '112', '113', '114', '115',
                  '116', '117', '119', '121', '122', '123', '124', '200', '201', '202', '203', '205', '208',
@@ -195,10 +196,27 @@ def loadData():
     for n in numberSet:
         getDataSet(n, dataSet, lableSet)
 
+    # 类别均衡前的样本分布情况
+    print("Original dataset shape: {}".format(Counter(lableSet)))
+
+    # 过采样
+    # ros = RandomOverSampler(random_state=0)
+    # X_resampled, y_resampled = ros.fit_resample(dataSet, lableSet)
+
+    # 欠采样
+    rus = RandomUnderSampler(random_state=0)
+    # normal_samples = 9600
+    # abnormal_samples = 4800
+    # rus = RandomUnderSampler(sampling_strategy={0:normal_samples, 1:abnormal_samples, 2:abnormal_samples, 3:abnormal_samples}, random_state=0)
+    X_resampled, y_resampled = rus.fit_resample(dataSet, lableSet)
+
+    # 类别均衡后的样本分布情况
+    print("Resampled dataset shape: {}".format(Counter(y_resampled)))
+
     # 转numpy数组,打乱顺序
-    dataSet = np.array(dataSet).reshape(-1, 300) # shape(90242, 300)
-    lableSet = np.array(lableSet).reshape(-1, 1) # shape(90242, )->(90242, 1)
-    train_ds = np.hstack((dataSet, lableSet)) # shape(90242, 301)
+    X_resampled = np.array(X_resampled).reshape(-1, 300)
+    y_resampled = np.array(y_resampled).reshape(-1, 1)
+    train_ds = np.hstack((X_resampled, y_resampled)) # shape(90242, 301)
     np.random.shuffle(train_ds)
 
     # 数据集及其标签集
@@ -257,8 +275,8 @@ class ECG_Dataset(Dataset):
         for i in range(Num_Datas):
             x_data_row_i = np.array(X_data)[i,:]
             x_data_row_i_norm = Z_Score_norm(x_data_row_i)
-            # key = sigma_delta_encoding(x_data_row_i_norm, Time_Partitions, Voltage_Partitions)
-            key = torch.tensor(BSA(x_data_row_i_norm.reshape(1,-1)))
+            key = sigma_delta_encoding(x_data_row_i_norm, Time_Partitions, Voltage_Partitions)
+            # key = torch.tensor(BSA(x_data_row_i.reshape(1,-1))-BSA(-x_data_row_i.reshape(1,-1)))
             # plt.figure()
             # TSEvent.from_raster(torch.transpose(key,0,1), dt=1e-3).plot()
             # plt.show()
@@ -278,6 +296,8 @@ class ECG_Dataset(Dataset):
 def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
     model.to(device)
     criterion = CrossEntropyLoss()
+    # loss = criterion(modSim_peaks, modSim_output)
+    # print(confusion_matrix(modSim_peaks, modSim_output))
     opt = Adam(model.parameters().astorch(), lr=Learning_Rate)
     best_val_f1 = 0
     for epoch in range(Num_Epochs):
@@ -333,12 +353,9 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
         print(f"Val Epoch = {epoch+1}, bestf1score = {best_val_f1}, f1score = {f1}")
         if f1 > best_val_f1:
             best_val_f1 = f1
-            model.save("models/model_best.json")
+            model.save("output/bsa/model_best.json")
 
 def main():
-
-    
-
     X_data, Y_data = loadData()
     print(X_data.shape, Y_data.shape)
     data=X_data
@@ -371,6 +388,49 @@ def main():
     val_dataloader = DataLoader(val_dataset, batch_size=Batch_Size, num_workers=16)
     test_dataloader = DataLoader(test_dataset, batch_size=Batch_Size, num_workers=16)
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=CLASSES,n_channels=Time_Partitions))
+    # # model = SynNet(n_classes=CLASSES,n_channels=300)
+    model = SynNet(n_classes=CLASSES,n_channels=dataset_params["Time_Partitions"])
+    # # temp = torch.randn((1,1,30)).to(device)
+    # # print(model(temp))
+    # state_dict = torch.load("output/model_weights.pth")
+    # model.load_state_dict(state_dict)
+    # g = model.as_graph()
+    # spec = x.vA2.mapper(g, weight_dtype='float', threshold_dtype='float', dash_dtype='float')
+    # quant_spec = spec.copy()
+    # # - Quantize the specification
+    # spec.update(q.global_quantize(**spec))
+    # config, is_valid, msg = x.vA2.config_from_specification(**spec)
+    # print(is_valid)
+    # modSim = x.vA2.XyloSim.from_config(config)
+    # test_iterator = iter(test_dataloader)
+    # batch, target = next(test_iterator)
+    # for i in range(batch.shape[0]):
+    #     modSim_output, _, r_d = modSim(batch[i].numpy(), record = True)
+    #     modSim_peaks = modSim_output.max(1)[0]
+    #     print(target[i]==modSim_peaks)
+    #导入Samna
+    # - Import the Xylo HDK detection function
+    # import samna
+    # samna.init_samna()
+    from rockpool.devices.xylo import find_xylo_hdks
+    # from rockpool.devices.xylo import find_xylo_hdks, xylo_devkit_utils
+    # xylo_hdk_nodes = xylo_devkit_utils.find_xylo_boards(samna.device_node)
+    # - Detect a connected HDK and import the required support package
+    connected_hdks, support_modules, chip_versions = find_xylo_hdks()
+    found_xylo = len(connected_hdks) > 0
+    if found_xylo:
+        hdk = connected_hdks[0]
+        x = support_modules[0]
+    else:
+        assert False, 'This tutorial requires a connected Xylo HDK to run.'
+    spec = x.mapper(model.as_graph(), weight_dtype = 'float')
+    spec.update(q.global_quantize(**spec))
+    # - Use rockpool.devices.xylo.config_from_specification
+    config, is_valid, msg = x.config_from_specification(**spec)
+    # - Use rockpool.devices.xylo.XyloSamna to deploy to the HDK
+    if found_xylo:
+        modSamna = x.XyloSamna(hdk, config, dt = 0.01)
+        print(modSamna)
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=CLASSES,n_channels=300))
 
 if __name__ == '__main__':

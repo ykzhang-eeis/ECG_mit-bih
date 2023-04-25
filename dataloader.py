@@ -14,7 +14,7 @@ class ECG_Dataset(Dataset):
             x_data_row_i = np.array(X_data)[i,:]
             x_data_row_i_norm = Z_Score_norm(x_data_row_i)
             key = sigma_delta_encoding(x_data_row_i_norm, dataset_params["Time_Partitions"], dataset_params["Voltage_Partitions"])
-            # key = torch.tensor(BSA_encoding(x_data_row_i.reshape(1,-1)))
+            # key = torch.tensor(BSA_encoding(x_data_row_i.reshape(1,-1))-BSA_encoding(-x_data_row_i.reshape(1,-1)))
             # plt.figure()
             # TSEvent.from_raster(torch.transpose(key,0,1), dt=1e-3).plot()
             # plt.show()

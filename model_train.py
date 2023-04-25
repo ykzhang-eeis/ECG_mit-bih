@@ -97,4 +97,5 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
         print(f"Val Epoch = {epoch+1}, bestf1score = {best_val_f1}, f1score = {f1}")
         if f1 > best_val_f1:
             best_val_f1 = f1
-            model.save("output/model_best.json")
+            torch.save(model.state_dict(), "output/model_weights.pth")
+            # model.save("output/model_best.json")
