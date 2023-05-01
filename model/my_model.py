@@ -7,10 +7,9 @@ from rockpool.parameters import Constant
 from rockpool.nn.modules.torch.lif_torch import PeriodicExponential
 import copy
 
-Nin = 30
+Nin = 15
 Nout = 4
 dt = 1e-3
-
 Nhidden = 63
 
 My_net = Sequential(

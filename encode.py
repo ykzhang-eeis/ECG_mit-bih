@@ -68,7 +68,7 @@ def BSA_decoding(spikings, filter=np.squeeze(imp)):
 def sigma_delta_encoding(data, interval_size, num_intervals):
 
     len_col = int(len(data)/ interval_size)
-    # 将原始数据分成大小为(10,30)的矩阵，共10行，每行30列
+    # 将原始数据分成大小为(30,10)的矩阵，共30行，每行10列
     data = data.reshape(interval_size, -1)
 
     # 计算出每个矩阵对应的阈值，比如num_intervals，就按照最大值和最小值等间隔将数值分割为num_intervals份
