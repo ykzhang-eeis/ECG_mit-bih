@@ -7,7 +7,7 @@ from rockpool.parameters import Constant
 from rockpool.nn.modules.torch.lif_torch import PeriodicExponential
 import copy
 
-Nin = 15
+Nin = 1
 Nout = 4
 dt = 1e-3
 Nhidden = 63

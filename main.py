@@ -40,6 +40,10 @@ import warnings
 warnings.filterwarnings('ignore')
 
 def main():
+    # model = SynNet(n_classes=dataset_params["CLASSES"], n_channels=1)
+    # # model = My_net
+    # state_dict = torch.load("output/model_weights1.pth",map_location=torch.device('cpu'))
+    # model.load_state_dict(state_dict)
     # X_train,Y_train为所有的数据集和标签集
     # X_test,Y_test为拆分的测试集和标签集
     X_data, Y_data = loadData()
@@ -61,10 +65,12 @@ def main():
     train_dataloader = DataLoader(train_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=16)
     val_dataloader = DataLoader(val_dataset, batch_size=training_params["Batch_Size"], num_workers=16)
     test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], num_workers=16)
+    # model_train(train_dataloader, test_dataloader, model)
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=300))
-    # model_train(train_dataloader, test_dataloader, WaveSenseNet(dilations=[2, 32],n_classes=dataset_params["CLASSES"],n_channels_in=300))
-    model_train(train_dataloader, test_dataloader,My_net)
+    model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=1))
+    # model_train(train_dataloader, test_dataloader, WaveSenseNet(dilations=[2, 32],n_classes=dataset_params["CLASSES"],n_channels_in=1))
+    # model_train(train_dataloader, test_dataloader,My_net)
 
 if __name__ == '__main__':
     main()

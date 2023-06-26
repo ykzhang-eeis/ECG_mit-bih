@@ -37,7 +37,7 @@ warnings.filterwarnings('ignore')
 
 def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
     model.to(training_params["device"])
-    class_weights = torch.FloatTensor([4.0, 1.0, 4.0, 1.0]).to(training_params["device"])
+    class_weights = torch.FloatTensor([1.0, 1.0, 1.0, 1.0]).to(training_params["device"])
     criterion = CrossEntropyLoss(weight=class_weights)
     # criterion = CrossEntropyLoss()
     opt = Adam(model.parameters().astorch(), lr=training_params["Learning_Rate"])
@@ -52,7 +52,9 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
             model.reset_state()
             opt.zero_grad()
             out, _,rec = model(batch, record = True)
-            peaks = out.max(1)[0].to(training_params["device"])
+            # peaks = out.max(1)[0].to(training_params["device"])
+            peaks = torch.sum(out,dim=1)
+            # print(peaks.argmax(1)==target)
             loss = criterion(peaks, target)
             l2_reg = 0.0
             for param in model.parameters():
@@ -82,7 +84,8 @@ def model_train(train_dataloader, test_dataloader, model=SynNet(4,4)):
                 target = target.type(torch.LongTensor).to(training_params["device"])
                 model.reset_state()
                 out, _,rec = model(batch, record = True)
-                peaks = out.max(1)[0]
+                # peaks = torch.sum(out,dim=1)
+                # print(peaks.argmax(1)==target)
                 pred = peaks.argmax(1).detach().to(training_params["device"])
                 loss = criterion(peaks, target)
                 test_loss += loss.item()/training_params["Num_Datas"]
