@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import tqdm
 
+from torchsummary import summary
 from torch.optim import Adam
 from torch.nn import CrossEntropyLoss, MSELoss
 from torch.utils.data import Dataset, DataLoader, random_split
@@ -24,8 +25,9 @@ from data_process import *
 from encode import sigma_delta_encoding, BSA_encoding, BSA_decoding
 from params import *
 from dataloader import *
-from model_train import model_train
+from model_train import model_train_ann, model_train_snn
 from model.my_model import My_net
+from model.ann_model import ann_net
 # - Pretty printing
 try:
     from rich import print
@@ -39,38 +41,44 @@ from IPython.display import Image
 import warnings
 warnings.filterwarnings('ignore')
 
+
 def main():
-    # model = SynNet(n_classes=dataset_params["CLASSES"], n_channels=1)
-    # # model = My_net
-    # state_dict = torch.load("output/model_weights1.pth",map_location=torch.device('cpu'))
-    # model.load_state_dict(state_dict)
-    # X_train,Y_train为所有的数据集和标签集
-    # X_test,Y_test为拆分的测试集和标签集
     X_data, Y_data = loadData()
     print(X_data.shape, Y_data.shape)
     print("data ok!!!")
     X_data = np.reshape(X_data, (-1, 300)) # 将shape从(286892,300,1)转变为(286892,300)
     print(X_data.shape, Y_data.shape)
-    # pd.DataFrame(X_train).to_csv('X_train.csv')
-    # pd.DataFrame(X_test).to_csv('X_test.csv')
-    # pd.DataFrame(Y_train).to_csv('Y_train.csv')
-    # pd.DataFrame(Y_test).to_csv('Y_test.csv')
     dataset = ECG_Dataset(X_data, Y_data)
     train_size = int((1-dataset_params["RATIO"]) * len(dataset))
     test_size = int(dataset_params["RATIO"] * len(dataset))
     val_size = len(dataset) - train_size - test_size
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
-    # for (inputs, targets) in dataset:
-    #     print(f"输入的sigma-delta编码矩阵为\n{inputs}\n对应的类别为第{targets}类")
-    train_dataloader = DataLoader(train_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=16)
-    val_dataloader = DataLoader(val_dataset, batch_size=training_params["Batch_Size"], num_workers=16)
-    test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], num_workers=16)
+    train_dataloader = DataLoader(train_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=0)
+    val_dataloader = DataLoader(val_dataset, batch_size=training_params["Batch_Size"], num_workers=0)
+    test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=0)
     # model_train(train_dataloader, test_dataloader, model)
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=300))
-    model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=1))
+    # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=2))
     # model_train(train_dataloader, test_dataloader, WaveSenseNet(dilations=[2, 32],n_classes=dataset_params["CLASSES"],n_channels_in=1))
-    # model_train(train_dataloader, test_dataloader,My_net)
+    model_train_snn(train_dataloader, test_dataloader,My_net)
+
+'''
+def main():
+    model = ann_net.to(device="cuda")
+    summary(model, input_size=[(30,2)], batch_size=16, device="cuda")
+    state_dict = torch.load("output/model_weights.pth",map_location=torch.device('cuda'))
+    model.load_state_dict(state_dict)
+    X_data, Y_data = loadData()
+    print(X_data.shape, Y_data.shape)
+    print("data ok!!!")
+    X_data = np.reshape(X_data, (-1, 300)) # 将shape从(286892,300,1)转变为(286892,300)
+    print(X_data.shape, Y_data.shape)
+    dataset = ECG_Dataset(X_data, Y_data)
+    for (inputs, targets) in dataset:
+        preds = model(inputs.unsqueeze(0).to("cuda").to(torch.float32)).argmax(1)
+        print(f"{preds == targets}")
+'''
 
 if __name__ == '__main__':
     main()

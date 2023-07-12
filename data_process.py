@@ -44,7 +44,7 @@ def getDataSet(number, X_data, Y_data):
     # ecgClassSet = ['L', 'R', 'V']
     
     # 读取心电数据记录
-    print("正在读取 " + number + " 号心电数据...")
+    print("Reading No." + number + " ECG data...")
     """
         wfdb.rdrecord()可以从PhysioNet数据库（或WFDB格式的本地文件）中读取记录数据，并将其返回为一个Record对象
         Record对象包含多个属性，包括信号数据（以Numpy数组的形式存储）和有关记录元数据的信息（例如记录名称、采样率、信号标准化值等）。
