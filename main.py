@@ -57,11 +57,11 @@ def main():
     val_dataloader = DataLoader(val_dataset, batch_size=training_params["Batch_Size"], num_workers=0)
     test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=0)
     # model_train(train_dataloader, test_dataloader, model)
-    # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
+    model_train_snn(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=300))
     # model_train(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=2))
     # model_train(train_dataloader, test_dataloader, WaveSenseNet(dilations=[2, 32],n_classes=dataset_params["CLASSES"],n_channels_in=1))
-    model_train_snn(train_dataloader, test_dataloader,My_net)
+    # model_train_snn(train_dataloader, test_dataloader,My_net)
 
 '''
 def main():

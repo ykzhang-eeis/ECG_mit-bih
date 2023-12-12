@@ -28,7 +28,6 @@ from data_process import *
 from encode import sigma_delta_encoding, BSA_encoding, BSA_decoding
 from params import *
 from dataloader import *
-from model_train import model_train
 from model.my_model import My_net
 # - Pretty printing
 try:
@@ -82,6 +81,7 @@ from rockpool.devices.xylo import find_xylo_hdks
 # xylo_hdk_nodes = xylo_devkit_utils.find_xylo_boards(samna.device_node)
 # - Detect a connected HDK and import the required support package
 connected_hdks, support_modules, chip_versions = find_xylo_hdks()
+print("it's here1")
 found_xylo = len(connected_hdks) > 0
 if found_xylo:
     hdk = connected_hdks[0]

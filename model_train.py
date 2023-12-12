@@ -35,7 +35,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def model_train_snn(train_dataloader, test_dataloader, model=SynNet(4,4)):
+def model_train_snn(train_dataloader, test_dataloader, model=SynNet(4,15)):
     model.to(training_params["device"])
     class_weights = torch.FloatTensor([1.0, 1.0, 1.0, 1.0]).to(training_params["device"])
     criterion = CrossEntropyLoss(weight=class_weights)
@@ -53,8 +53,8 @@ def model_train_snn(train_dataloader, test_dataloader, model=SynNet(4,4)):
             opt.zero_grad()
             out, _,rec = model(batch, record = True)
             # peaks = out.max(1)[0].to(training_params["device"])
-            # peaks = torch.sum(out,dim=1)
-            peaks = out.squeeze(0)
+            peaks = torch.sum(out,dim=1)
+            # peaks = out.squeeze(0)
             # print(peaks.argmax(1)==target)
             loss = criterion(peaks, target)
             l2_reg = 0.0
@@ -85,8 +85,8 @@ def model_train_snn(train_dataloader, test_dataloader, model=SynNet(4,4)):
                 target = target.type(torch.LongTensor).to(training_params["device"])
                 model.reset_state()
                 out, _,rec = model(batch, record = True)
-                # peaks = torch.sum(out,dim=1)
-                peaks = out.squeeze(0)
+                peaks = torch.sum(out,dim=1)
+                # peaks = out.squeeze(0)
                 # print(peaks.argmax(1)==target)
                 pred = peaks.argmax(1).detach().to(training_params["device"])
                 loss = criterion(peaks, target)

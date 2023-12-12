@@ -3,19 +3,15 @@ import sys
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm 
 from pathlib import Path
-from rockpool.devices.xylo.syns61201 import XyloSamna, config_from_specification, xa2_devkit_utils as hdu
-# - Numpy
+from rockpool.devices.xylo.syns61201 import config_from_specification, xa2_devkit_utils as hdu
+
 import torch
 from rockpool.nn.modules import LinearTorch, LIFTorch
 from rockpool.parameters import Constant
-from rockpool.nn.combinators import Sequential
 # - Matplotlib
 import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize'] = [12, 4]
 plt.rcParams['figure.dpi'] = 300
-
-# - Rockpool time-series handling
-from rockpool import TSEvent, TSContinuous
 
 # - Pretty printing
 try:
@@ -31,11 +27,6 @@ import warnings
 warnings.filterwarnings('ignore')
 from rockpool.nn.networks.wavesense import WaveSenseNet
 from rockpool.transform import quantize_methods as q
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
-from pathlib import Path
-from tqdm.asyncio import tqdm
-from scipy.interpolate import interp1d
 
 #获取模型
 dilations = [2, 32]
