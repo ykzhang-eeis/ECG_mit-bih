@@ -38,10 +38,9 @@ def Z_Score_norm(data):
 
 # 读取心电数据和对应标签,并对数据进行小波去噪
 def getDataSet(number, X_data, Y_data):
-    # ecgClassSet = ['N', 'A', 'V', 'L', 'R']
+
     # 正常心电(N)、左束支阻滞(L)、右束支阻滞(R)及室性早搏(V)四种心拍类型
     ecgClassSet = ['N', 'L', 'R', 'V']
-    # ecgClassSet = ['L', 'R', 'V']
     
     # 读取心电数据记录
     print("Reading No." + number + " ECG data...")
@@ -64,9 +63,9 @@ def getDataSet(number, X_data, Y_data):
     i = start
     j = len(annotation.symbol) - end
 
-    # 因为只选择NAVLR五种心电类型,所以要选出该条记录中所需要的那些带有特定标签的数据,舍弃其余标签的点
+    # 因为只选择NVLR五种心电类型,所以要选出该条记录中所需要的那些带有特定标签的数据,舍弃其余标签的点
     # X_data在R波前后截取长度为300的数据点
-    # Y_data将NAVLR按顺序转换为01234
+    # Y_data将NVLR按顺序转换为0123
     while i < j:
         try:
             lable = ecgClassSet.index(Rclass[i])
