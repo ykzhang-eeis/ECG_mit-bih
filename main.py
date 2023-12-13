@@ -24,7 +24,7 @@ def main():
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
     train_dataloader = DataLoader(train_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=0)
     val_dataloader = DataLoader(val_dataset, batch_size=training_params["Batch_Size"], num_workers=0)
-    test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=0)
+    test_dataloader = DataLoader(test_dataset, batch_size=training_params["Batch_Size"], shuffle=False, num_workers=0)
     # model_train_snn(train_dataloader, test_dataloader, SynNet(n_classes=dataset_params["CLASSES"],n_channels=dataset_params["Time_Partitions"]))
     model_train_snn(train_dataloader, test_dataloader, My_net)
 

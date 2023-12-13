@@ -8,10 +8,6 @@ try:
 except:
     pass
 
-# - Disable warnings
-import warnings
-warnings.filterwarnings('ignore')
-from rockpool.transform import quantize_methods as q
 model = My_net
 
 from rockpool.devices.xylo import find_xylo_hdks

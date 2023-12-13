@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from pathlib import Path
 # - Numpy
 import torch
 # - Pretty printing
@@ -13,10 +11,9 @@ except:
 import warnings
 warnings.filterwarnings('ignore')
 from torch.utils.data import DataLoader, random_split
-from params import *
-from data_process import *
-from dataloader import *
-from model import My_net
+from params import dataset_params, training_params
+from data_process import loadData
+from dataloader import ECG_Dataset
 from rockpool.nn.networks import SynNet
 
 model = SynNet(n_classes=dataset_params["CLASSES"], n_channels=1)
