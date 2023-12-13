@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader, random_split
 from params import *
 from data_process import *
 from dataloader import *
-from model.my_model import My_net
+from model import My_net
 from rockpool.nn.networks import SynNet
 
 model = SynNet(n_classes=dataset_params["CLASSES"], n_channels=1)
@@ -45,9 +45,3 @@ target = target.type(torch.LongTensor)
 out, _,rec = model(batch, record = True)
 peaks = torch.sum(out,dim=1)
 print(peaks.argmax(1)==target)
-# for i in range(batch.shape[0]):
-#     output = model(batch[i].float())[0]
-#     peaks = torch.sum(output, dim=1).argmax()
-#     print(peaks,target[i])
-#     accuracy_list.append(target[i].long()==peaks)
-# print(accuracy_list)

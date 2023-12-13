@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from rockpool.devices import xylo as x
 from rockpool.transform import quantize_methods as q
-from model.my_model import My_net
+from model import My_net
 try:
     from rich import print
 except:
