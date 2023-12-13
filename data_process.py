@@ -1,14 +1,43 @@
 import numpy as np
-
+import torch
 import wfdb
 import pywt
-from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from collections import Counter
 try:
     from rich import print
 except:
     pass
+
+def sigma_delta_encoding(data, interval_size, num_intervals):
+
+    data = data.reshape(interval_size, -1)
+
+    # 计算出每个矩阵对应的阈值，比如num_intervals，就按照最大值和最小值等间隔将数值分割为num_intervals份
+    # thresholds = torch.linspace(data.min(), data.max(), num_intervals+1)[1:-1] # shape (num_intervals-1, )
+    # 如果不在(min,max)做等间隔分得阈值，而是固定范围区间为(-2,6)
+    thresholds = torch.linspace(-2, 6, num_intervals+1)[1:-1]
+
+    # print(thresholds)
+    data = torch.tensor(data)
+
+    # 计算每一列与阈值的比较结果
+    # 为了进行向量化比较，需要扩展数据和阈值的维度以便广播
+    data_expanded = data.unsqueeze(2)  # shape: (interval_size, len_col, 1)
+    thresholds_expanded = thresholds.unsqueeze(0).unsqueeze(0)  # shape: (1, 1, num_intervals-1)
+
+    # 计算是否上升或下降超过阈值
+    upper_cross = (data_expanded[:, :-1] < thresholds_expanded) & (data_expanded[:, 1:] > thresholds_expanded)
+    lower_cross = (data_expanded[:, :-1] > thresholds_expanded) & (data_expanded[:, 1:] < thresholds_expanded)
+
+    # 计算每个区间的上升和下降次数
+    upper_thresh_counts = upper_cross.sum(dim=1).sum(dim=1)
+    lower_thresh_counts = lower_cross.sum(dim=1).sum(dim=1)
+
+    # 将结果合并为一个输出矩阵
+    output_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
+
+    return output_matrix
 
 # 小波去噪预处理
 def denoise(data):
@@ -63,7 +92,7 @@ def getDataSet(number, X_data, Y_data):
     i = start
     j = len(annotation.symbol) - end
 
-    # 因为只选择NVLR五种心电类型,所以要选出该条记录中所需要的那些带有特定标签的数据,舍弃其余标签的点
+    # 因为只选择NVLR四种心电类型,所以要选出该条记录中所需要的那些带有特定标签的数据,舍弃其余标签的点
     # X_data在R波前后截取长度为300的数据点
     # Y_data将NVLR按顺序转换为0123
     while i < j:
@@ -91,15 +120,8 @@ def loadData():
     # 类别均衡前的样本分布情况
     print("Original dataset shape: {}".format(Counter(lableSet)))
 
-    # 过采样
-    # ros = RandomOverSampler(random_state=0)
-    # X_resampled, y_resampled = ros.fit_resample(dataSet, lableSet)
-
     # 欠采样
     rus = RandomUnderSampler(random_state=0)
-    # normal_samples = 9600
-    # abnormal_samples = 4800
-    # rus = RandomUnderSampler(sampling_strategy={0:normal_samples, 1:abnormal_samples, 2:abnormal_samples, 3:abnormal_samples}, random_state=0)
     X_resampled, y_resampled = rus.fit_resample(dataSet, lableSet)
 
     # 类别均衡后的样本分布情况

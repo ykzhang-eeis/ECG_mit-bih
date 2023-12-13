@@ -7,11 +7,6 @@ from dataloader import ECG_Dataset
 from train import model_train_snn
 from model import My_net
 
-try:
-    from rich import print
-except:
-    pass
-
 def main():
     X_data, Y_data = loadData()
     X_data = np.reshape(X_data, (-1, 300)) # 将shape从(len, 300, 1)转变为(len, 300)
