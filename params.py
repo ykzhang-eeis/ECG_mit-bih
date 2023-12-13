@@ -9,7 +9,7 @@ dataset_params = {
 
 training_params = {
     "Num_Datas": 1280, # 传入的数据总数X_data.shape[0] = 90242(过采样之前，过采样之后为286892)
-    "Num_Epochs": 20,
+    "Num_Epochs": 100,
     "Batch_Size": 64,
     "Learning_Rate": 1e-3,
     "lambda_reg": 0.001, # 定义正则化项的系数

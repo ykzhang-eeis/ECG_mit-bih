@@ -1,1 +1,3 @@
 Dataset/*
+.vscode/
+__pycache__/

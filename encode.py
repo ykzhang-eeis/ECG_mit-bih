@@ -2,10 +2,37 @@ import torch
 import numpy as np
 from scipy import signal
 
-try:
-    from rich import print
-except:
-    pass
+def sigma_delta_encoding(data, interval_size, num_intervals):
+
+    data = data.reshape(interval_size, -1)
+
+    # 计算出每个矩阵对应的阈值，比如num_intervals，就按照最大值和最小值等间隔将数值分割为num_intervals份
+    # thresholds = torch.linspace(data.min(), data.max(), num_intervals+1)[1:-1] # shape (num_intervals-1, )
+    # 如果不在(min,max)做等间隔分得阈值，而是固定范围区间为(-2,6)
+    thresholds = torch.linspace(-2, 6, num_intervals+1)[1:-1]
+
+    # print(thresholds)
+    data = torch.tensor(data)
+
+    # 计算每一列与阈值的比较结果
+    # 为了进行向量化比较，需要扩展数据和阈值的维度以便广播
+    data_expanded = data.unsqueeze(2)  # shape: (interval_size, len_col, 1)
+    thresholds_expanded = thresholds.unsqueeze(0).unsqueeze(0)  # shape: (1, 1, num_intervals-1)
+
+    # 计算是否上升或下降超过阈值
+    upper_cross = (data_expanded[:, :-1] < thresholds_expanded) & (data_expanded[:, 1:] > thresholds_expanded)
+    lower_cross = (data_expanded[:, :-1] > thresholds_expanded) & (data_expanded[:, 1:] < thresholds_expanded)
+
+    # 计算每个区间的上升和下降次数
+    upper_thresh_counts = upper_cross.sum(dim=1).sum(dim=1)
+    lower_thresh_counts = lower_cross.sum(dim=1).sum(dim=1)
+
+    # 将结果合并为一个输出矩阵
+    output_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
+
+    return output_matrix
+
+
 
 NUM_TAPS = 11 # 数字低通滤波器的阶数，也就是滤波器的长度。
 CUT_OFF_FREQ = 15 # 数字低通滤波器的截止频率，单位为赫兹。
@@ -64,39 +91,4 @@ def BSA_decoding(spikings, filter=np.squeeze(imp)):
         output[channel,:]=output[channel,:]*(sigma[channel])+mul[channel]
         
     return output
-
-def sigma_delta_encoding(data, interval_size, num_intervals):
-
-    len_col = int(len(data)/ interval_size)
-    # 将原始数据分成大小为(30,10)的矩阵，共30行，每行10列
-    data = data.reshape(interval_size, -1)
-
-    # 计算出每个矩阵对应的阈值，比如num_intervals，就按照最大值和最小值等间隔将数值分割为num_intervals份
-    # thresholds = torch.linspace(data.min(), data.max(), num_intervals+1)[1:-1] # shape (num_intervals-1, )
-    # 如果不在(min,max)做等间隔分得阈值，而是固定范围区间为(-2,6)
-    thresholds = torch.linspace(-2, 6, num_intervals+1)[1:-1]
-
-    # print(thresholds)
-    data = torch.tensor(data)
-
-    upper_thresh = []
-    lower_thresh = []
-    for seg_data in data:
-        up_counts = 0
-        down_counts = 0
-        for i in range(len_col-1): # 这个30-1之后要改成采样点除以分割区间个数-1
-            for j in range(num_intervals-1):
-                if(seg_data[i]<thresholds[j] and seg_data[i+1]>thresholds[j]):
-                    up_counts += 1
-                if(seg_data[i]>thresholds[j] and seg_data[i+1]<thresholds[j]):
-                    down_counts += 1
-        upper_thresh.append(up_counts)
-        lower_thresh.append(down_counts)
-
-    # 将向上和向下超过阈值的次数填入输出矩阵中
-    upper_thresh = torch.tensor(upper_thresh)
-    lower_thresh = torch.tensor(lower_thresh)
-    output_matrix = torch.stack([upper_thresh, lower_thresh], dim=0)
-
-    return output_matrix
 

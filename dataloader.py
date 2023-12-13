@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset
 from params import training_params, dataset_params
-from encode import sigma_delta_encoding, BSA_encoding
+from encode import sigma_delta_encoding
 from data_process import Z_Score_norm
 import matplotlib.pyplot as plt
 
@@ -14,10 +14,10 @@ class ECG_Dataset(Dataset):
         for i in range(training_params["Num_Datas"]):
             x_data_row_i = np.array(X_data)[i,:]
             x_data_row_i_norm = Z_Score_norm(x_data_row_i)
-            plt.plot(x_data_row_i_norm)
-            plt.show()
+            # plt.plot(x_data_row_i_norm)
+            # plt.show()
             key = sigma_delta_encoding(x_data_row_i_norm, dataset_params["Time_Partitions"], dataset_params["Voltage_Partitions"])
-            # key = key.reshape(-1, 15)
+            key = key.reshape(-1, 15)
             # key = torch.tensor(BSA_encoding(x_data_row_i.reshape(1,-1))-BSA_encoding(-x_data_row_i.reshape(1,-1))).reshape(-1,1)
             # plt.figure()
             # TSEvent.from_raster(torch.transpose(key,0,1), dt=1e-3).plot()
