@@ -14,15 +14,12 @@ def sigma_delta_encoding(data, interval_size, num_intervals):
     data = data.reshape(interval_size, -1)
 
     # 计算出每个矩阵对应的阈值，比如num_intervals，就按照最大值和最小值等间隔将数值分割为num_intervals份
-    # thresholds = torch.linspace(data.min(), data.max(), num_intervals+1)[1:-1] # shape (num_intervals-1, )
     # 如果不在(min,max)做等间隔分得阈值，而是固定范围区间为(-2,6)
     thresholds = torch.linspace(-2, 6, num_intervals+1)[1:-1]
 
-    # print(thresholds)
     data = torch.tensor(data)
 
-    # 计算每一列与阈值的比较结果
-    # 为了进行向量化比较，需要扩展数据和阈值的维度以便广播
+    # 计算每一列与阈值的比较结果，为了进行向量化比较，需要扩展数据和阈值的维度以便广播
     data_expanded = data.unsqueeze(2)  # shape: (interval_size, len_col, 1)
     thresholds_expanded = thresholds.unsqueeze(0).unsqueeze(0)  # shape: (1, 1, num_intervals-1)
 
@@ -34,7 +31,6 @@ def sigma_delta_encoding(data, interval_size, num_intervals):
     upper_thresh_counts = upper_cross.sum(dim=1).sum(dim=1)
     lower_thresh_counts = lower_cross.sum(dim=1).sum(dim=1)
 
-    # 将结果合并为一个输出矩阵
     output_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
 
     return output_matrix
@@ -50,6 +46,7 @@ def denoise(data):
 
     cD1.fill(0)
     cD2.fill(0)
+
     # 对第2~8层的分解系数进行软阈值处理，得到去噪后的系数。
     for i in range(1, len(coeffs) - 2):
         coeffs[i] = pywt.threshold(coeffs[i], threshold)
@@ -93,8 +90,7 @@ def getDataSet(number, X_data, Y_data):
     j = len(annotation.symbol) - end
 
     # 因为只选择NVLR四种心电类型,所以要选出该条记录中所需要的那些带有特定标签的数据,舍弃其余标签的点
-    # X_data在R波前后截取长度为300的数据点
-    # Y_data将NVLR按顺序转换为0123
+    # X_data在R波前后截取长度为300的数据点，Y_data将NVLR按顺序转换为0123
     while i < j:
         try:
             lable = ecgClassSet.index(Rclass[i])

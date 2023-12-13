@@ -31,7 +31,7 @@ def model_train_snn(train_dataloader, test_dataloader, model=SynNet(classes, cha
         test_confusion_matrix = confusion_matrix(test_targets, test_predictions)
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Train F1: {train_f1}")
         print(f"Test Loss: {test_loss}, Test F1: {test_f1}, Precision: {test_precision}, Recall: {test_recall}")
-        print(f"Test Confusion Matrix:\n{test_confusion_matrix}")
+        print(test_confusion_matrix)
         if test_f1 > best_val_f1:
             best_val_f1 = test_f1
             torch.save(model.state_dict(), "output/model_weights.pth")

@@ -1,6 +1,5 @@
-import numpy as np
-# - Numpy
 import torch
+import numpy as np
 
 try:
     from rich import print
