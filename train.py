@@ -2,9 +2,10 @@ import torch
 import tqdm
 from torch.optim import Adam
 from torch.nn import CrossEntropyLoss
-from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion_matrix
+from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion_matrix, accuracy_score
 from rockpool.nn.networks import SynNet
 from params import training_params, dataset_params
+from inference import inference
 
 try:
     from rich import print
@@ -27,10 +28,10 @@ def model_train_snn(train_dataloader, test_dataloader, model=SynNet(classes, cha
     best_val_f1 = 0
     for epoch in range(epochs):
         train_loss, train_f1 = run_epoch(train_dataloader, model, criterion, optimizer, device, train=True)
-        test_loss, test_f1, test_precision, test_recall, test_predictions, test_targets = run_epoch(test_dataloader, model, criterion, optimizer, device, train=False)
+        test_loss, test_f1, test_precision, test_recall, test_accuracy, test_predictions, test_targets = run_epoch(test_dataloader, model, criterion, optimizer, device, train=False)
         test_confusion_matrix = confusion_matrix(test_targets, test_predictions)
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Train F1: {train_f1}")
-        print(f"Test Loss: {test_loss}, Test F1: {test_f1}, Precision: {test_precision}, Recall: {test_recall}")
+        print(f"Test Loss: {test_loss}, Test F1: {test_f1}, Precision: {test_precision}, Recall: {test_recall}, ACC: {test_accuracy}")
         print(test_confusion_matrix)
         if test_f1 > best_val_f1:
             best_val_f1 = test_f1
@@ -63,6 +64,7 @@ def run_epoch(dataloader, model, criterion, optimizer, device, train):
 
     f1 = f1_score(targets, predictions, average="macro")
     if not train:
+        accuracy = accuracy_score(targets, predictions)
         precision, recall, _, _ = precision_recall_fscore_support(targets, predictions, average='macro')
-        return total_loss, f1, precision, recall, predictions, targets
+        return total_loss, f1, precision, recall, accuracy, predictions, targets
     return total_loss, f1
