@@ -2,7 +2,6 @@ import numpy as np
 import pywt
 import torch
 import wfdb
-from collections import Counter
 from imblearn.under_sampling import RandomUnderSampler
 from typing import List, Tuple
 
@@ -152,6 +151,7 @@ def load_and_preprocess_data() -> Tuple[np.ndarray, np.ndarray]:
     # Perform random undersampling to balance the classes
     rus = RandomUnderSampler(random_state=0)
     X_resampled, y_resampled = rus.fit_resample(data_set, label_set)
+    # X_resampled = Z_score_norm(X_resampled)
 
     # Convert to numpy arrays and shuffle
     X_resampled = np.array(X_resampled).reshape(-1, 300, 1)

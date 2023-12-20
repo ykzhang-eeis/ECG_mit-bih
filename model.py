@@ -1,8 +1,9 @@
 from rockpool.nn.modules import LIFBitshiftTorch
 from rockpool.nn.modules import LinearTorch
 from rockpool.nn.combinators import Sequential, Residual
-from rockpool.parameters import Constant
 from rockpool.nn.modules.torch.lif_torch import PeriodicExponential
+from rockpool.parameters import Constant
+
 
 Nin = 15
 Nout = 4
