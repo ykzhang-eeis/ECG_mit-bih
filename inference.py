@@ -7,7 +7,7 @@ from params import training_params
 
 device = training_params["device"]
 
-def inference(model, test_dataloader) -> float:
+def run_inference(model, test_dataloader) -> float:
     state_dict = torch.load("output/model_weights.pth", map_location=device)
     model.load_state_dict(state_dict)
     model.to(device).eval()

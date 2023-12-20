@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def model_train_snn(train_dataloader, test_dataloader, model) -> None:
+def train_snn_model(train_dataloader, test_dataloader, model) -> None:
     device = training_params["device"]
     lr = training_params["Learning_Rate"]
     epochs = training_params["Num_Epochs"]

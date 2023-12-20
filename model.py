@@ -10,7 +10,7 @@ Nout = 4
 dt = 1e-3
 Nhidden = 63
 
-My_net = Sequential(
+MyNet = Sequential(
     LinearTorch((Nin, Nhidden), has_bias=False),
     LIFBitshiftTorch(
         (Nhidden),
