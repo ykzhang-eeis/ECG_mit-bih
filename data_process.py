@@ -1,136 +1,166 @@
 import numpy as np
+import pywt
 import torch
 import wfdb
-import pywt
 from imblearn.under_sampling import RandomUnderSampler
-from collections import Counter
+from typing import List, Tuple
+
 try:
     from rich import print
 except:
     pass
 
-def sigma_delta_encoding(data, interval_size, num_intervals):
 
+def sigma_delta_encoding(data: np.ndarray, interval_size: int, num_intervals: int) -> torch.Tensor:
+    """ 
+    Perform sigma-delta encoding on ECG data
+        
+    Args:
+        data (np.ndarray): ECG data with a time step of 300
+        interval_size (int): Divide the time interval into `interval_size` parts
+        num_intervals (int): Divide the amplitude range into `num_intervals` parts
+    
+    Returns:
+        output_matrix (torch.Tensor): shape(2, interval_size), where the first row represents 
+                                      the count of upward threshold crossings and the second row represents 
+                                      the count of downward threshold crossings for each interval. 
+
+    """
+
+    assert 300 % interval_size == 0, f"interval_size is {interval_size}, can't be divided by 300"
+    
+    # Reshape data according to the interval size
     data = data.reshape(interval_size, -1)
 
-    # 计算出每个矩阵对应的阈值，比如num_intervals，就按照最大值和最小值等间隔将数值分割为num_intervals份
-    # 如果不在(min,max)做等间隔分得阈值，而是固定范围区间为(-2,6)
+    # Create thresholds for sigma-delta encoding, spaced evenly between -2 and 6
     thresholds = torch.linspace(-2, 6, num_intervals+1)[1:-1]
 
+    # Convert numpy array to torch tensor
     data = torch.tensor(data)
 
-    # 计算每一列与阈值的比较结果，为了进行向量化比较，需要扩展数据和阈值的维度以便广播
-    data_expanded = data.unsqueeze(2)  # shape: (interval_size, len_col, 1)
-    thresholds_expanded = thresholds.unsqueeze(0).unsqueeze(0)  # shape: (1, 1, num_intervals-1)
+    # Expand dimensions of data and thresholds for vectorized comparison
+    data_expanded = data.unsqueeze(2)  # Add a new dimension for thresholds comparison
+    thresholds_expanded = thresholds.unsqueeze(0).unsqueeze(0) # Expand threshold dimensions
 
-    # 计算是否上升或下降超过阈值
+    # Determine crossings: where data crosses thresholds from below (upper_cross) or above (lower_cross)
     upper_cross = (data_expanded[:, :-1] < thresholds_expanded) & (data_expanded[:, 1:] > thresholds_expanded)
     lower_cross = (data_expanded[:, :-1] > thresholds_expanded) & (data_expanded[:, 1:] < thresholds_expanded)
 
-    # 计算每个区间的上升和下降次数
-    upper_thresh_counts = upper_cross.sum(dim=1).sum(dim=1)
-    lower_thresh_counts = lower_cross.sum(dim=1).sum(dim=1)
+    # Count threshold crossings for each interval
+    upper_thresh_counts = upper_cross.sum(dim=1).sum(dim=1)  # Count of upward crossings
+    lower_thresh_counts = lower_cross.sum(dim=1).sum(dim=1)  # Count of downward crossings
 
+    # Stack the counts of upper and lower threshold crossings to form the output matrix
     output_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
 
     return output_matrix
 
-# 小波去噪预处理
-def denoise(data):
-    coeffs = pywt.wavedec(data=data, wavelet='db5', level=9)
+
+def denoise(data: np.ndarray, wavelet: str='db5', level: int=9) -> np.ndarray:
+    """
+    Denoise data using wavelet transform.
+
+    Args:
+        data (np.ndarray): Input data to be denoised.
+        wavelet (str): Wavelet type to use for the transformation. Default is 'db5'.
+        level (int): Level of wavelet decomposition. Default is 9.
+
+    Returns:
+        np.ndarray: Denoised data.
+    """
     
-    # 得到各层分解系数cA9, cD9, cD8, cD7, cD6, cD5, cD4, cD3, cD2, cD1。其中，cA9是第9层近似系数，cD1~cD9是第1~9层细节系数。
-    cA9, cD9, cD8, cD7, cD6, cD5, cD4, cD3, cD2, cD1 = coeffs
+    # Decompose data with wavelet transform
+    coeffs = pywt.wavedec(data=data, wavelet=wavelet, level=level)
 
-    threshold = (np.median(np.abs(cD1)) / 0.6745) * (np.sqrt(2 * np.log(len(cD1))))
+    # Calculate the universal threshold
+    detail_coeffs = coeffs[-1]
+    median_abs_deviation = np.median(np.abs(detail_coeffs))
+    universal_threshold = median_abs_deviation / 0.6745 * np.sqrt(2 * np.log(len(detail_coeffs)))
 
-    cD1.fill(0)
-    cD2.fill(0)
+    # Apply thresholding to detail coefficients
+    coeffs[1:] = [pywt.threshold(c, universal_threshold) for c in coeffs[1:]]
 
-    # 对第2~8层的分解系数进行软阈值处理，得到去噪后的系数。
-    for i in range(1, len(coeffs) - 2):
-        coeffs[i] = pywt.threshold(coeffs[i], threshold)
+    # Reconstruct data from thresholded coefficients
+    return pywt.waverec(coeffs=coeffs, wavelet=wavelet)
 
-    # 小波反变换,获取去噪后的信号
-    rdata = pywt.waverec(coeffs=coeffs, wavelet='db5')
-    return rdata
 
-def Z_Score_norm(data):
-    eps = 1e-6
+def Z_score_norm(data: np.ndarray) -> np.ndarray:
+    """
+        Normalize the given data using the Z-score normalization method.
+    """
+    eps = 1e-6 # Small epsilon to prevent division by zero
     mean = np.mean(data)
     std = np.std(data)
-    data_norm = (data - mean) / (std + eps)
-    return data_norm
 
-# 读取心电数据和对应标签,并对数据进行小波去噪
-def getDataSet(number, X_data, Y_data):
+    return (data - mean) / (std + eps)
 
-    # 正常心电(N)、左束支阻滞(L)、右束支阻滞(R)及室性早搏(V)四种心拍类型
-    ecgClassSet = ['N', 'L', 'R', 'V']
-    
-    # 读取心电数据记录
-    print("Reading No." + number + " ECG data...")
+
+def read_and_denoise_ecg_data(record_number: str, X_data: List[np.ndarray], Y_data: List[int]) -> None:
     """
-        wfdb.rdrecord()可以从PhysioNet数据库（或WFDB格式的本地文件）中读取记录数据，并将其返回为一个Record对象
-        Record对象包含多个属性，包括信号数据（以Numpy数组的形式存储）和有关记录元数据的信息（例如记录名称、采样率、信号标准化值等）。
+    Reads ECG data for a given record number, performs wavelet denoising, and extracts relevant features.
+
+    Args:
+        record_number (str): The record number to read ECG data from.
+        X_data (List[np.ndarray]): The list to store extracted ECG features.
+        Y_data (List[int]): The list to store corresponding labels for ECG features.
+
+    Returns:
+        None: The function modifies X_data and Y_data in place.
     """
-    record = wfdb.rdrecord('Dataset/mit-bih-arrhythmia-database-1.0.0/' + number, channel_names=['MLII'])
-    data = record.p_signal.flatten() # 将(650000,1)转为(650000, )
+
+    ecg_class_set = ['N', 'L', 'R', 'V']
+    print(f"Reading No.{record_number} ECG data...")
+
+    # Read ECG data
+    record_path = f'Dataset/mit-bih-arrhythmia-database-1.0.0/{record_number}'
+    record = wfdb.rdrecord(record_path, channel_names=['MLII'])
+    data = record.p_signal.flatten()
     rdata = denoise(data=data)
 
-    # 获取心电数据记录中R波的位置和对应的标签
-    annotation = wfdb.rdann('Dataset/mit-bih-arrhythmia-database-1.0.0/' + number, 'atr')
-    Rlocation = annotation.sample # shape为(2274,)
-    Rclass = annotation.symbol # 长度为2274
+    # Read annotations for R waves
+    annotation = wfdb.rdann(record_path, 'atr')
+    Rlocation, Rclass = annotation.sample, annotation.symbol
 
-    # 去掉前后的不稳定数据
-    start = 10
-    end = 5
-    i = start
-    j = len(annotation.symbol) - end
-
-    # 因为只选择NVLR四种心电类型,所以要选出该条记录中所需要的那些带有特定标签的数据,舍弃其余标签的点
-    # X_data在R波前后截取长度为300的数据点，Y_data将NVLR按顺序转换为0123
-    while i < j:
-        try:
-            lable = ecgClassSet.index(Rclass[i])
+    # Process data, ignoring unstable start and end segments
+    for i in range(10, len(Rclass) - 5):
+        if Rclass[i] in ecg_class_set:
+            label = ecg_class_set.index(Rclass[i])
             x_train = rdata[Rlocation[i] - 99:Rlocation[i] + 201]
             X_data.append(x_train)
-            Y_data.append(lable)
-            i += 1
-        except ValueError:
-            i += 1
-    return
+            Y_data.append(label)
 
-# 加载数据集并进行预处理
-def loadData():
-    numberSet = ['100', '101', '103', '105', '106', '107', '108', '109', '111', '112', '113', '114', '115',
+
+def load_and_preprocess_data() -> Tuple[np.ndarray, np.ndarray]:
+    """
+        Load ECG dataset, perform preprocessing, and balance classes via undersampling.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: Tuple of processed feature array X and label array Y.
+    """
+
+    number_set = ['100', '101', '103', '105', '106', '107', '108', '109', '111', '112', '113', '114', '115',
                  '116', '117', '119', '121', '122', '123', '124', '200', '201', '202', '203', '205', '208',
                  '210', '212', '213', '214', '215', '217', '219', '220', '221', '222', '223', '228', '230',
                  '231', '232', '233', '234']
-    dataSet = []
-    lableSet = []
-    for n in numberSet:
-        getDataSet(n, dataSet, lableSet)
+    data_set, label_set = [], []
+    
+    # Read and preprocess data for each record
+    for number in number_set:
+        read_and_denoise_ecg_data(number, data_set, label_set)
 
-    # 类别均衡前的样本分布情况
-    print("Original dataset shape: {}".format(Counter(lableSet)))
-
-    # 欠采样
+    # Perform random undersampling to balance the classes
     rus = RandomUnderSampler(random_state=0)
-    X_resampled, y_resampled = rus.fit_resample(dataSet, lableSet)
+    X_resampled, y_resampled = rus.fit_resample(data_set, label_set)
+    # X_resampled = Z_score_norm(X_resampled)
 
-    # 类别均衡后的样本分布情况
-    print("Resampled dataset shape: {}".format(Counter(y_resampled)))
+    # Convert to numpy arrays and shuffle
+    X_resampled = np.array(X_resampled).reshape(-1, 300, 1)
+    y_resampled = np.array(y_resampled)
 
-    # 转numpy数组,打乱顺序
-    X_resampled = np.array(X_resampled).reshape(-1, 300)
-    y_resampled = np.array(y_resampled).reshape(-1, 1)
-    train_ds = np.hstack((X_resampled, y_resampled)) # shape(90242, 301)
-    np.random.shuffle(train_ds)
+    # Shuffle the dataset
+    indices = np.arange(X_resampled.shape[0])
+    np.random.shuffle(indices)
+    X = X_resampled[indices]
+    Y = y_resampled[indices]
 
-    # 数据集及其标签集
-    X = train_ds[:, :300].reshape(-1, 300, 1) # shape(90242, 300, 1)
-    Y = train_ds[:, 300] # shape(90242, )
-
-    return X,Y
+    return X, Y

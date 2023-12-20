@@ -1,15 +1,16 @@
 from rockpool.nn.modules import LIFBitshiftTorch
 from rockpool.nn.modules import LinearTorch
 from rockpool.nn.combinators import Sequential, Residual
-from rockpool.parameters import Constant
 from rockpool.nn.modules.torch.lif_torch import PeriodicExponential
+from rockpool.parameters import Constant
+
 
 Nin = 15
 Nout = 4
 dt = 1e-3
 Nhidden = 63
 
-My_net = Sequential(
+MyNet = Sequential(
     LinearTorch((Nin, Nhidden), has_bias=False),
     LIFBitshiftTorch(
         (Nhidden),

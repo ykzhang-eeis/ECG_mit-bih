@@ -9,6 +9,9 @@ except:
     pass
 
 model = My_net
+model.eval()
+state_dict = torch.load("output/model_weights.pth", map_location="cpu")
+model.load_state_dict(state_dict)
 
 from rockpool.devices.xylo import find_xylo_hdks
 

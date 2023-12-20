@@ -1,7 +1,8 @@
+import torch
 from rockpool.devices import xylo as x
 from rockpool.transform import quantize_methods as q
-
-from model import My_net
+from sklearn.metrics import accuracy_score
+from model import MyNet
 # - Pretty printing
 try:
     from rich import print
@@ -12,7 +13,10 @@ except:
 import warnings
 warnings.filterwarnings('ignore')
 
-model = My_net
+model = MyNet
+model.eval()
+state_dict = torch.load("output/model_weights.pth", map_location="cpu")
+model.load_state_dict(state_dict)
 
 from rockpool.devices.xylo import find_xylo_hdks
 
@@ -29,5 +33,28 @@ spec.update(q.global_quantize(**spec))
 config, is_valid, msg = x.config_from_specification(**spec)
 
 if found_xylo:
-    modSamna = x.XyloSamna(hdk, config, dt = 0.01)
+    modSamna = x.XyloSamna(hdk, config, dt = 0.001)
     print(modSamna)
+
+def print_shape_hook(module, input, output):
+    print(f"{module.__class__.__name__} output shape: {output.shape}")
+
+for layer in model.children():
+    layer.register_forward_hook(print_shape_hook)
+
+data = torch.rand((16, 2, 15))
+output = model(data)
+
+def xylo_inference(test_dataloader, modSamna=modSamna):
+    predictions, targets = [], []
+
+    for batch, target in test_dataloader:
+        batch = batch.cpu().numpy().astype(int)
+        target = target.type(torch.long)
+        modSamna.reset_state() # 模型维护了一种内部状态，这种状态如果不重置，会对模型的预测产生负面影响
+        out, _, recordings = modSamna(batch, record=True)
+        predictions.extend(out.argmax(1))
+        targets.extend(target.cpu().numpy())
+
+    accuracy = accuracy_score(targets, predictions)
+    print(f'Infer accuracy: {accuracy}')
