@@ -1,5 +1,4 @@
 import torch
-from rich import print
 from sklearn.metrics import accuracy_score
 
 from params import training_params
