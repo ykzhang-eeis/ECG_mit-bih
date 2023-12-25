@@ -25,12 +25,12 @@ def main():
     test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False, num_workers=0)
 
     model = MyNet
-    train_snn_model(train_dataloader, test_dataloader, model)
-    infer_acc = run_inference(model, test_dataloader)
-    print(f'Inference Accuracy: {infer_acc:.4f}')
+    # train_snn_model(train_dataloader, test_dataloader, model)
+    # infer_acc = run_inference(model, test_dataloader)
+    # print(f'Inference Accuracy: {infer_acc:.4f}')
 
-    # from deploy2Xylo import xylo_inference
-    # xylo_inference(test_dataloader)
+    from deploy2Xylo import xylo_inference
+    xylo_inference(test_dataloader)
 
 if __name__ == '__main__':
     main()

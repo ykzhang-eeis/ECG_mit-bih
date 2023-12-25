@@ -1,23 +1,23 @@
 import torch
-from rockpool.devices import xylo as x
-from rockpool.transform import quantize_methods as q
+import warnings
 from sklearn.metrics import accuracy_score
-from model import MyNet
+from rockpool.devices.xylo import find_xylo_hdks
+from rockpool.transform import quantize_methods as q
+
 # - Pretty printing
 try:
     from rich import print
 except:
     pass
 
-# - Disable warnings
-import warnings
+from model import MyNet
+
 warnings.filterwarnings('ignore')
 
 model = MyNet
 state_dict = torch.load("output/model_weights.pth", map_location="cpu")
-model.load_state_dict(state_dict).eval
-
-from rockpool.devices.xylo import find_xylo_hdks
+model.load_state_dict(state_dict)
+model.eval()
 
 connected_hdks, support_modules, chip_versions = find_xylo_hdks()
 found_xylo = len(connected_hdks) > 0

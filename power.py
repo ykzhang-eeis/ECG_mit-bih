@@ -10,7 +10,8 @@ except:
 
 model = MyNet
 state_dict = torch.load("output/model_weights.pth", map_location="cpu")
-model.load_state_dict(state_dict).eval()
+model.load_state_dict(state_dict)
+model.eval()
 
 from rockpool.devices.xylo import find_xylo_hdks
 
@@ -33,7 +34,7 @@ modSamna = x.XyloSamna(hdk, config, dt = 0.01)
 io_power_list = []
 logic_power_list = []
 
-data = torch.rand((500, 4), dtype=torch.float)
+data = torch.rand((500, 123), dtype=torch.float)
 data = data.numpy().astype(int)
 
 modSamna.reset_state()
