@@ -11,6 +11,7 @@ class ECGDataset(Dataset):
                  num_datas: int, time_partitions: int, voltage_partitions: int):
         super().__init__()
         self.samples = []
+        X_data = np.reshape(X_data, (-1, 300)) # Reshape from (len, 300, 1) to (len, 300)
 
         for i in range(num_datas):
             x_data_row_i = X_data[i, :]
