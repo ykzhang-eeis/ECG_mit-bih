@@ -17,7 +17,6 @@ class ECGDataset(Dataset):
             x_data_row_i = X_data[i, :]
             x_data_row_i_norm = Z_score_norm(x_data_row_i)
             key = sigma_delta_encoding(x_data_row_i_norm, time_partitions, voltage_partitions)
-            key = key.reshape(-1, 15)
             value = Y_data[i]
             self.samples.append((key, value))
 

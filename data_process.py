@@ -52,8 +52,8 @@ def sigma_delta_encoding(data: np.ndarray, interval_size: int, num_intervals: in
 
     # Stack the counts of upper and lower threshold crossings to form the output matrix
     temp_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
-    flattened_matrix = temp_matrix.view(-1)
-    output_matrix = flattened_matrix.view(-1, 15)
+    flattened_matrix = temp_matrix.T.reshape(-1)
+    output_matrix = flattened_matrix.reshape(-1, 15)
 
     return output_matrix
 

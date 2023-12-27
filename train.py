@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def train_snn_model(train_dataloader, test_dataloader, model) -> None:
+def train_snn_model(model, train_dataloader, test_dataloader) -> None:
     device = training_params["device"]
     lr = training_params["Learning_Rate"]
     epochs = training_params["Num_Epochs"]
@@ -25,15 +25,14 @@ def train_snn_model(train_dataloader, test_dataloader, model) -> None:
     for epoch in range(epochs):
         train_loss, train_f1 = run_epoch(train_dataloader, model, criterion, optimizer, device, train=True)
         test_metrics = run_epoch(test_dataloader, model, criterion, optimizer, device, train=False)
-        test_loss, test_f1 = test_metrics[:2]
+        test_loss, test_f1, test_precision, test_recall, test_accuracy = test_metrics[:5]
 
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Train F1: {train_f1}")
         print(f"Test Loss: {test_loss}, Test F1: {test_f1}")
+        print(f"Precision: {test_precision}, Recall: {test_recall}, ACC: {test_accuracy}")
 
-        if len(test_metrics) > 2:
-            test_precision, test_recall, test_accuracy, test_predictions, test_targets = test_metrics[2:]
-            print(f"Precision: {test_precision}, Recall: {test_recall}, ACC: {test_accuracy}")
-            print(confusion_matrix(test_targets, test_predictions))
+        test_predictions, test_targets = test_metrics[5:]
+        print(confusion_matrix(test_targets, test_predictions))
 
         if test_f1 > best_val_f1:
             best_val_f1 = test_f1

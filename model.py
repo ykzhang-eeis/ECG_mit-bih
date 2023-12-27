@@ -42,6 +42,28 @@ MyNet = Sequential(
             spike_generation_fn=PeriodicExponential,
         ),
     ),
+    Residual(
+        LinearTorch((Nhidden, Nhidden), has_bias=False),
+        LIFBitshiftTorch(
+            (Nhidden),
+            tau_mem=0.002,
+            tau_syn=0.002,
+            bias=Constant(0),
+            dt=dt,
+            spike_generation_fn=PeriodicExponential,
+        ),
+    ),
+    Residual(
+        LinearTorch((Nhidden, Nhidden), has_bias=False),
+        LIFBitshiftTorch(
+            (Nhidden),
+            tau_mem=0.002,
+            tau_syn=0.002,
+            bias=Constant(0),
+            dt=dt,
+            spike_generation_fn=PeriodicExponential,
+        ),
+    ),
     LinearTorch((Nhidden, Nout), has_bias=False),
     LIFBitshiftTorch(
         (Nout),
