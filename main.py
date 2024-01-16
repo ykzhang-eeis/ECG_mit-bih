@@ -21,14 +21,15 @@ if __name__ == '__main__':
     train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
     train_dataloader = DataLoader(train_dataset, batch_size=training_params["Batch_Size"], shuffle=True, num_workers=0)
-    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=0)
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
 
-    train_snn_model(model, train_dataloader, test_dataloader)
-    infer_acc = run_inference(model, test_dataloader)
-    print(f'Inference Accuracy: {infer_acc:.4f}')
+    # train_snn_model(model, train_dataloader, test_dataloader)
+    # infer_acc = run_inference(model, test_dataloader)
+    # print(f'Inference Accuracy: {infer_acc:.4f}')
 
     # from deploy2Xylo import xylo_inference
     # xylo_inference(test_dataloader)
 
-    # from test_xylosim import xyloSim_inference
-    # xyloSim_inference(test_dataloader)
+    from test_xylosim import xyloSim_inference
+    xylosim_infer_acc = xyloSim_inference(test_dataloader)
+    print(f'XyloSim Inference Accuracy: {xylosim_infer_acc:.4f}')

@@ -5,7 +5,7 @@ from rockpool.nn.modules.torch.lif_torch import PeriodicExponential
 from rockpool.parameters import Constant
 
 
-Nin = 15
+Nin = 2
 Nout = 4
 dt = 1e-3
 Nhidden = 63
@@ -19,28 +19,6 @@ MyNet = Sequential(
         bias=Constant(0),
         dt=dt,
         spike_generation_fn=PeriodicExponential,
-    ),
-    Residual(
-        LinearTorch((Nhidden, Nhidden), has_bias=False),
-        LIFBitshiftTorch(
-            (Nhidden),
-            tau_mem=0.002,
-            tau_syn=0.002,
-            bias=Constant(0),
-            dt=dt,
-            spike_generation_fn=PeriodicExponential,
-        ),
-    ),
-    Residual(
-        LinearTorch((Nhidden, Nhidden), has_bias=False),
-        LIFBitshiftTorch(
-            (Nhidden),
-            tau_mem=0.002,
-            tau_syn=0.002,
-            bias=Constant(0),
-            dt=dt,
-            spike_generation_fn=PeriodicExponential,
-        ),
     ),
     Residual(
         LinearTorch((Nhidden, Nhidden), has_bias=False),

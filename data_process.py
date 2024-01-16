@@ -51,11 +51,9 @@ def sigma_delta_encoding(data: np.ndarray, interval_size: int, num_intervals: in
     lower_thresh_counts = lower_cross.sum(dim=1).sum(dim=1)  # Count of downward crossings
 
     # Stack the counts of upper and lower threshold crossings to form the output matrix
-    temp_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
-    flattened_matrix = temp_matrix.T.reshape(-1)
-    output_matrix = flattened_matrix.reshape(-1, 15)
+    output_matrix = torch.stack([upper_thresh_counts, lower_thresh_counts], dim=0)
 
-    return output_matrix
+    return output_matrix.T
 
 
 def BSA(input_data, filter_array, threshold, channels_num=23):

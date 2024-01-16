@@ -4,9 +4,8 @@ from torch.nn import CrossEntropyLoss
 from rich import print
 from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion_matrix, accuracy_score
 from tqdm import tqdm
-from rockpool.nn.networks import SynNet
 
-from params import training_params, dataset_params
+from params import training_params
 
 import warnings
 warnings.filterwarnings('ignore')
