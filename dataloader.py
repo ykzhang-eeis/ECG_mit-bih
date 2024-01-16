@@ -11,12 +11,12 @@ class ECGDataset(Dataset):
                  num_datas: int, time_partitions: int, voltage_partitions: int):
         super().__init__()
         self.samples = []
+        X_data = np.reshape(X_data, (-1, 300)) # Reshape from (len, 300, 1) to (len, 300)
 
         for i in range(num_datas):
             x_data_row_i = X_data[i, :]
             x_data_row_i_norm = Z_score_norm(x_data_row_i)
             key = sigma_delta_encoding(x_data_row_i_norm, time_partitions, voltage_partitions)
-            key = key.reshape(-1, 15)
             value = Y_data[i]
             self.samples.append((key, value))
 
