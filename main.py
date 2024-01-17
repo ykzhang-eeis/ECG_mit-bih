@@ -5,7 +5,6 @@ from params import dataset_params, training_params
 from dataloader import ECGDataset
 from train import train_snn_model
 from model import MyNet
-from inference import run_inference
 from sweep_config import sweepConfig
 
 if __name__ == '__main__':
