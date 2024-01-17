@@ -1,0 +1,12 @@
+wandb_version: 1
+
+batch_size:
+  value: 56
+fc_layer_size:
+  value: 512
+learning_rate:
+  value: 0.09681856477317592
+num_epochs:
+  value: 50
+optimizer:
+  value: adam

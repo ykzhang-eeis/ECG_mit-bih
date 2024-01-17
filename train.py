@@ -1,3 +1,5 @@
+import os
+import wandb
 import torch
 from torch.optim import Adam
 from torch.nn import CrossEntropyLoss
@@ -5,19 +7,20 @@ from rich import print
 from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion_matrix, accuracy_score
 from tqdm import tqdm
 
+
 from params import training_params
 
 import warnings
 warnings.filterwarnings('ignore')
 
-
-def train_snn_model(model, train_dataloader, test_dataloader) -> None:
+def train_snn_model(model, train_dataloader, test_dataloader, config=None) -> None:
     device = training_params["device"]
-    lr = training_params["Learning_Rate"]
-    epochs = training_params["Num_Epochs"]
+    lr = config.learning_rate if config else training_params["Learning_Rate"]
+    epochs = config.num_epochs if config else training_params["Num_Epochs"]
 
     model.to(device)
     criterion = CrossEntropyLoss()
+    wandb.watch(model, criterion, log="all", log_freq=10)
     optimizer = Adam(model.parameters().astorch(), lr=lr)
 
     best_val_f1 = 0.0
@@ -29,12 +32,18 @@ def train_snn_model(model, train_dataloader, test_dataloader) -> None:
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Train F1: {train_f1}")
         print(f"Test Loss: {test_loss}, Test F1: {test_f1}")
         print(f"Precision: {test_precision}, Recall: {test_recall}, ACC: {test_accuracy}")
+        wandb.log({'epoch': epoch+1, 'loss': train_loss, 
+                   'f1': train_f1, 'test_loss': test_loss, 
+                   'test_f1': test_f1, 'test_precision': test_precision, 
+                   'test_recall': test_recall, 'test_accuracy': test_accuracy})
 
         test_predictions, test_targets = test_metrics[5:]
         print(confusion_matrix(test_targets, test_predictions))
 
         if test_f1 > best_val_f1:
             best_val_f1 = test_f1
+            if not os.path.exists("output"):
+                os.makedirs("output")
             torch.save(model.state_dict(), "output/model_weights.pth")
 
 def run_epoch(dataloader, model, criterion, optimizer, device, train):
