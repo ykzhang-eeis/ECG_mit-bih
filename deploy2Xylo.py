@@ -34,12 +34,6 @@ config, is_valid, msg = x.config_from_specification(**spec)
 
 modSamna = x.XyloSamna(hdk, config, dt = 0.001)
 
-# def print_shape_hook(module, input, output):
-#     print(f"{module.__class__.__name__} output shape: {output.shape}")
-
-# for layer in model.children():
-#     layer.register_forward_hook(print_shape_hook)
-
 data = torch.rand((16, 2, 15))
 output = model(data)
 
