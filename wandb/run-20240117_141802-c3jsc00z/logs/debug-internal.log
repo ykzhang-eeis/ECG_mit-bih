@@ -1,0 +1,51 @@
+2024-01-17 14:18:02,334 INFO    StreamThr :54453 [internal.py:wandb_internal():86] W&B internal server running at pid: 54453, started at: 2024-01-17 14:18:02.334073
+2024-01-17 14:18:02,341 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: status
+2024-01-17 14:18:02,349 INFO    WriterThread:54453 [datastore.py:open_for_write():87] open: /home/zyk/Personal_study_projects/ECG_mit-bih/wandb/run-20240117_141802-c3jsc00z/run-c3jsc00z.wandb
+2024-01-17 14:18:02,350 DEBUG   SenderThread:54453 [sender.py:send():382] send: header
+2024-01-17 14:18:02,362 DEBUG   SenderThread:54453 [sender.py:send():382] send: run
+2024-01-17 14:18:03,816 INFO    SenderThread:54453 [dir_watcher.py:__init__():211] watching files in: /home/zyk/Personal_study_projects/ECG_mit-bih/wandb/run-20240117_141802-c3jsc00z/files
+2024-01-17 14:18:03,816 INFO    SenderThread:54453 [sender.py:_start_run_threads():1136] run started: c3jsc00z with start time 1705472282.333475
+2024-01-17 14:18:03,833 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: check_version
+2024-01-17 14:18:03,833 DEBUG   SenderThread:54453 [sender.py:send_request():409] send_request: check_version
+2024-01-17 14:18:05,683 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: run_start
+2024-01-17 14:18:05,708 DEBUG   HandlerThread:54453 [system_info.py:__init__():27] System info init
+2024-01-17 14:18:05,708 DEBUG   HandlerThread:54453 [system_info.py:__init__():42] System info init done
+2024-01-17 14:18:05,709 INFO    HandlerThread:54453 [system_monitor.py:start():194] Starting system monitor
+2024-01-17 14:18:05,709 INFO    HandlerThread:54453 [system_monitor.py:probe():214] Collecting system info
+2024-01-17 14:18:05,710 INFO    SystemMonitor:54453 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-01-17 14:18:05,713 INFO    SystemMonitor:54453 [interfaces.py:start():190] Started cpu monitoring
+2024-01-17 14:18:05,715 INFO    SystemMonitor:54453 [interfaces.py:start():190] Started disk monitoring
+2024-01-17 14:18:05,718 INFO    SystemMonitor:54453 [interfaces.py:start():190] Started gpu monitoring
+2024-01-17 14:18:05,721 INFO    SystemMonitor:54453 [interfaces.py:start():190] Started memory monitoring
+2024-01-17 14:18:05,723 INFO    SystemMonitor:54453 [interfaces.py:start():190] Started network monitoring
+2024-01-17 14:18:05,732 DEBUG   HandlerThread:54453 [system_info.py:probe():151] Probing system
+2024-01-17 14:18:05,760 DEBUG   HandlerThread:54453 [system_info.py:_probe_git():136] Probing git
+2024-01-17 14:18:05,769 DEBUG   HandlerThread:54453 [system_info.py:_probe_git():144] Probing git done
+2024-01-17 14:18:05,769 DEBUG   HandlerThread:54453 [system_info.py:probe():199] Probing system done
+2024-01-17 14:18:05,769 DEBUG   HandlerThread:54453 [system_monitor.py:probe():223] {'os': 'Linux-5.15.133.1-microsoft-standard-WSL2+-x86_64-with-glibc2.17', 'python': '3.8.16', 'heartbeatAt': '2024-01-17T06:18:05.732368', 'startedAt': '2024-01-17T06:18:02.321987', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/zyk/Personal_study_projects/ECG_mit-bih/main.py', 'codePathLocal': 'main.py', 'codePath': 'main.py', 'git': {'remote': 'https://github.com/ykzhang-eeis/ECG_mit-bih.git', 'commit': '25b55aa26449a489af7d92f3e9f190f4f754bd71'}, 'email': 'zhangyukunbupt@gmail.com', 'root': '/home/zyk/Personal_study_projects/ECG_mit-bih', 'host': 'DESKTOP-DA54TO1', 'username': 'zyk', 'executable': '/home/zyk/anaconda3/envs/ecg/bin/python', 'cpu_count': 10, 'cpu_count_logical': 20, 'cpu_freq': {'current': 3609.601, 'min': 0.0, 'max': 0.0}, 'cpu_freq_per_core': [{'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}, {'current': 3609.601, 'min': 0.0, 'max': 0.0}], 'disk': {'/': {'total': 1006.853931427002, 'used': 289.6744956970215}}, 'gpu': 'NVIDIA GeForce RTX 4090', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 4090', 'memory_total': 25757220864}], 'memory': {'total': 31.271812438964844}}
+2024-01-17 14:18:05,769 INFO    HandlerThread:54453 [system_monitor.py:probe():224] Finished collecting system info
+2024-01-17 14:18:05,769 INFO    HandlerThread:54453 [system_monitor.py:probe():227] Publishing system info
+2024-01-17 14:18:05,770 DEBUG   HandlerThread:54453 [system_info.py:_save_conda():208] Saving list of conda packages installed into the current environment
+2024-01-17 14:18:05,819 INFO    Thread-17 :54453 [dir_watcher.py:_on_file_created():271] file/dir created: /home/zyk/Personal_study_projects/ECG_mit-bih/wandb/run-20240117_141802-c3jsc00z/files/conda-environment.yaml
+2024-01-17 14:18:08,111 DEBUG   HandlerThread:54453 [system_info.py:_save_conda():220] Saving conda packages done
+2024-01-17 14:18:08,113 INFO    HandlerThread:54453 [system_monitor.py:probe():229] Finished publishing system info
+2024-01-17 14:18:08,115 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: status_report
+2024-01-17 14:18:08,116 DEBUG   SenderThread:54453 [sender.py:send():382] send: files
+2024-01-17 14:18:08,116 INFO    SenderThread:54453 [sender.py:_save_file():1403] saving file wandb-metadata.json with policy now
+2024-01-17 14:18:08,124 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: python_packages
+2024-01-17 14:18:08,124 DEBUG   SenderThread:54453 [sender.py:send_request():409] send_request: python_packages
+2024-01-17 14:18:08,125 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: stop_status
+2024-01-17 14:18:08,125 DEBUG   SenderThread:54453 [sender.py:send_request():409] send_request: stop_status
+2024-01-17 14:18:08,131 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-17 14:18:08,817 INFO    Thread-17 :54453 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/zyk/Personal_study_projects/ECG_mit-bih/wandb/run-20240117_141802-c3jsc00z/files/conda-environment.yaml
+2024-01-17 14:18:08,818 INFO    Thread-17 :54453 [dir_watcher.py:_on_file_created():271] file/dir created: /home/zyk/Personal_study_projects/ECG_mit-bih/wandb/run-20240117_141802-c3jsc00z/files/requirements.txt
+2024-01-17 14:18:08,818 INFO    Thread-17 :54453 [dir_watcher.py:_on_file_created():271] file/dir created: /home/zyk/Personal_study_projects/ECG_mit-bih/wandb/run-20240117_141802-c3jsc00z/files/wandb-metadata.json
+2024-01-17 14:18:09,578 DEBUG   SenderThread:54453 [sender.py:send():382] send: telemetry
+2024-01-17 14:18:09,905 INFO    wandb-upload_0:54453 [upload_job.py:push():131] Uploaded file /tmp/tmpowml7c70wandb/zpqhnaxj-wandb-metadata.json
+2024-01-17 14:18:13,579 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: status_report
+2024-01-17 14:18:18,580 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: status_report
+2024-01-17 14:18:23,125 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: stop_status
+2024-01-17 14:18:23,126 DEBUG   SenderThread:54453 [sender.py:send_request():409] send_request: stop_status
+2024-01-17 14:18:23,168 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-17 14:18:24,502 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: status_report
+2024-01-17 14:18:29,503 DEBUG   HandlerThread:54453 [handler.py:handle_request():146] handle_request: status_report

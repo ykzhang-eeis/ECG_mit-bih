@@ -1,0 +1,14 @@
+wandb_version: 1
+
+Time_Partitions:
+  value: 15
+Voltage_partitions:
+  value: 16
+batch_size:
+  value: 32
+learning_rate:
+  value: 0.001
+num_epochs:
+  value: 80
+optimizer:
+  value: sgd

@@ -1,0 +1,51 @@
+wandb_version: 1
+
+Time_Partitions:
+  desc: null
+  value: 15
+Voltage_partitions:
+  desc: null
+  value: 16
+batch_size:
+  desc: null
+  value: 32
+learning_rate:
+  desc: null
+  value: 0.001
+num_epochs:
+  desc: null
+  value: 80
+optimizer:
+  desc: null
+  value: adam
+_wandb:
+  desc: null
+  value:
+    python_version: 3.8.16
+    cli_version: 0.16.2
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1705480000.388472
+    t:
+      1:
+      - 1
+      - 5
+      - 12
+      - 53
+      - 55
+      2:
+      - 1
+      - 5
+      - 12
+      - 53
+      - 55
+      3:
+      - 2
+      - 23
+      - 37
+      4: 3.8.16
+      5: 0.16.2
+      8:
+      - 5
+      13: linux-x86_64

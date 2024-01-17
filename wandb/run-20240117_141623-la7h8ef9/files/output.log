@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/zyk/Personal_study_projects/ECG_mit-bih/main.py", line 36, in train
+    train_snn_model(model, train_dataloader, test_dataloader, config)
+  File "/home/zyk/Personal_study_projects/ECG_mit-bih/train.py", line 29, in train_snn_model
+    for epoch in range(epochs):
+TypeError: 'list' object cannot be interpreted as an integer
