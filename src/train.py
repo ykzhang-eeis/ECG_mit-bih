@@ -8,7 +8,7 @@ from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion
 from tqdm import tqdm
 
 
-from params import training_params
+from utils.params import training_params
 
 import warnings
 warnings.filterwarnings('ignore')

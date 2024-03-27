@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 from typing import Tuple
 
-from data_process import Z_score_norm, sigma_delta_encoding
+from .data_process import Z_score_norm, sigma_delta_encoding
 
 
 class ECGDataset(Dataset):
