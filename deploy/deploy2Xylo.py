@@ -10,7 +10,7 @@ try:
 except:
     pass
 
-from model import MyNet
+from models.model import MyNet
 
 warnings.filterwarnings('ignore')
 

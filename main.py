@@ -1,11 +1,11 @@
 import wandb
 from torch.utils.data import DataLoader, random_split
-from data_process import load_and_preprocess_data
-from params import dataset_params, training_params
-from dataloader import ECGDataset
-from train import train_snn_model
-from model import MyNet
-from sweep_config import sweepConfig
+from src.data_process import load_and_preprocess_data
+from utils.params import dataset_params, training_params
+from src.dataloader import ECGDataset
+from src.train import train_snn_model
+from models.model import MyNet
+from utils.sweep_config import sweepConfig
 
 if __name__ == '__main__':
 
@@ -27,11 +27,11 @@ if __name__ == '__main__':
             train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=0)
             test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
             
-            # train_snn_model(model, train_dataloader, test_dataloader, config)
+            train_snn_model(model, train_dataloader, test_dataloader, config)
 
-            from test_xylosim import xyloSim_inference
-            xylosim_infer_acc = xyloSim_inference(test_dataloader)
-            print(f'XyloSim Inference Accuracy: {xylosim_infer_acc:.4f}')
+            # from tests.test_xylosim import xyloSim_inference
+            # xylosim_infer_acc = xyloSim_inference(test_dataloader)
+            # print(f'XyloSim Inference Accuracy: {xylosim_infer_acc:.4f}')
 
     wandb.agent(sweep_id, train, count=10)
 

@@ -5,3 +5,5 @@ output/
 samna.log
 *.ipynb
 wandb/
+notebooks/
+tests/
