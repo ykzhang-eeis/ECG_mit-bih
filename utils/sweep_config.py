@@ -1,5 +1,3 @@
-import math
-
 sweepConfig = {
                 'method': 'grid',
                 'metric': {'goal': 'minimize', 'name': 'loss'},
