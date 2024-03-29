@@ -1,17 +1,14 @@
 import wandb
 from torch.utils.data import DataLoader, random_split
-from src.data_process import load_and_preprocess_data
-from utils.params import dataset_params, training_params
-from src.dataloader import ECGDataset
-from src.train import train_snn_model
-from models.model import MyNet
-from utils.sweep_config import sweepConfig
+from src import load_and_preprocess_data, ECGDataset, train_snn_model
+from utils import dataset_params, training_params, sweepConfig
+from models import MyNet
 
 if __name__ == '__main__':
 
     model = MyNet
 
-    sweep_id = wandb.sweep(sweepConfig, project="snn-ecg", entity="ykzhang2023")
+    sweep_id = wandb.sweep(sweepConfig, project="snn-ecg_0329", entity="ykzhang2023")
 
     X_data, Y_data = load_and_preprocess_data()
     
