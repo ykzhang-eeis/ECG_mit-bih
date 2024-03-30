@@ -55,40 +55,6 @@ def sigma_delta_encoding(data: np.ndarray, interval_size: int, num_intervals: in
 
     return output_matrix.T
 
-
-def BSA(input_data, filter_array, threshold, channels_num=23):
-    """
-    :param input_data: 形状为 [23,1024] 的ECG数据
-    :param filter_array: 滤波器数组
-    :param threshold: 阈值
-    :param channels_num: 通道数，默认为23
-    :return: 处理后的二值输出数组
-    """
-    # 数据标准化
-    data = input_data.copy()
-    means = data.mean(axis=1, keepdims=True)
-    stds = data.std(axis=1, keepdims=True)
-    normalized_data = (data - means) / stds
-
-    # 初始化输出数组
-    output = np.zeros_like(normalized_data, dtype=int)
-
-    # 滤波和阈值处理
-    filter_len = len(filter_array)
-    for channel in range(channels_num):
-        for i in range(normalized_data.shape[1]):
-            if i + filter_len - 1 <= normalized_data.shape[1] - 1:
-                segment = normalized_data[channel, i:i+filter_len]
-                error1 = np.abs(segment - filter_array).sum()
-                error2 = np.abs(segment).sum()
-                if error1 <= (error2 - threshold):
-                    output[channel, i] = 1
-                    normalized_data[channel, i:i+filter_len] -= filter_array
-
-    print("BSA编码结束：形状为：", output.shape)
-    return torch.Tensor(output)
-
-
 def denoise(data: np.ndarray, wavelet: str='db5', level: int=9) -> np.ndarray:
     """
     Denoise data using wavelet transform.
