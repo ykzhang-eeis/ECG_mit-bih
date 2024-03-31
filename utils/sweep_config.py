@@ -1,4 +1,4 @@
-sweepConfig = {
+SweepConfig = {
                 'method': 'grid',
                 'metric': {'goal': 'minimize', 'name': 'loss'},
                 'parameters': {

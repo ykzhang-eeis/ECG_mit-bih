@@ -83,7 +83,7 @@ def denoise(data: np.ndarray, wavelet: str='db5', level: int=9) -> np.ndarray:
     return pywt.waverec(coeffs=coeffs, wavelet=wavelet)
 
 
-def Z_score_norm(data: np.ndarray) -> np.ndarray:
+def z_score_norm(data: np.ndarray) -> np.ndarray:
     """
         Normalize the given data using the Z-score normalization method.
     """
@@ -118,13 +118,13 @@ def read_and_denoise_ecg_data(record_number: str, X_data: List[np.ndarray], Y_da
 
     # Read annotations for R waves
     annotation = wfdb.rdann(record_path, 'atr')
-    Rlocation, Rclass = annotation.sample, annotation.symbol
+    r_location, r_class = annotation.sample, annotation.symbol
 
     # Process data, ignoring unstable start and end segments
-    for i in range(10, len(Rclass) - 5):
-        if Rclass[i] in ecg_class_set:
-            label = ecg_class_set.index(Rclass[i])
-            x_train = rdata[Rlocation[i] - 99:Rlocation[i] + 201]
+    for i in range(10, len(r_class) - 5):
+        if r_class[i] in ecg_class_set:
+            label = ecg_class_set.index(r_class[i])
+            x_train = rdata[r_location[i] - 99:r_location[i] + 201]
             X_data.append(x_train)
             Y_data.append(label)
 
@@ -149,17 +149,17 @@ def load_and_preprocess_data() -> Tuple[np.ndarray, np.ndarray]:
 
     # Perform random undersampling to balance the classes
     rus = RandomUnderSampler(random_state=0)
-    X_resampled, y_resampled = rus.fit_resample(data_set, label_set)
-    # X_resampled = Z_score_norm(X_resampled)
+    x_resampled, y_resampled = rus.fit_resample(data_set, label_set)
+    # X_resampled = z_score_norm(X_resampled)
 
     # Convert to numpy arrays and shuffle
-    X_resampled = np.array(X_resampled).reshape(-1, 300, 1)
+    x_resampled = np.array(x_resampled).reshape(-1, 300, 1)
     y_resampled = np.array(y_resampled)
 
     # Shuffle the dataset
-    indices = np.arange(X_resampled.shape[0])
+    indices = np.arange(x_resampled.shape[0])
     np.random.shuffle(indices)
-    X = X_resampled[indices]
-    Y = y_resampled[indices]
+    x = x_resampled[indices]
+    y = y_resampled[indices]
 
-    return X, Y
+    return x, y

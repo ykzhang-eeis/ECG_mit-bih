@@ -13,5 +13,5 @@ training_params = {
     "Batch_Size": 64,
     "Learning_Rate": 1e-3,
     "lambda_reg": 0.001, # 定义正则化项的系数
-    "device": "cuda" if torch.cuda.is_available() else "cpu",
+    "Device": "cuda" if torch.cuda.is_available() else "cpu",
 }
