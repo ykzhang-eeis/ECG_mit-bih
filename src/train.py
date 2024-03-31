@@ -7,14 +7,13 @@ from rich import print
 from sklearn.metrics import f1_score, precision_recall_fscore_support, confusion_matrix, accuracy_score
 from tqdm import tqdm
 
-
 from utils.params import training_params
 
 import warnings
 warnings.filterwarnings('ignore')
 
 def train_snn_model(model, train_dataloader, test_dataloader, config=None) -> None:
-    device = training_params["device"]
+    device = training_params["Device"]
     lr = config.learning_rate if config else training_params["Learning_Rate"]
     epochs = config.num_epochs if config else training_params["Num_Epochs"]
 

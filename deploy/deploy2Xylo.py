@@ -10,7 +10,7 @@ try:
 except:
     pass
 
-from models.model import MyNet
+from models import MyNet
 
 warnings.filterwarnings('ignore')
 
@@ -32,19 +32,19 @@ spec = x.mapper(model.as_graph(), weight_dtype = 'float')
 spec.update(q.global_quantize(**spec))
 config, is_valid, msg = x.config_from_specification(**spec)
 
-modSamna = x.XyloSamna(hdk, config, dt = 0.001)
+mod_samna = x.XyloSamna(hdk, config, dt = 0.001)
 
 data = torch.rand((16, 2, 15))
 output = model(data)
 
-def xylo_inference(test_dataloader, modSamna=modSamna):
+def xylo_inference(test_dataloader, mod_samna=mod_samna):
     predictions, targets = [], []
 
     for batch, target in test_dataloader:
         batch = batch.cpu().numpy().astype(int)
         target = target.type(torch.long)
-        modSamna.reset_state() # 模型维护了一种内部状态，这种状态如果不重置，会对模型的预测产生负面影响
-        out, _, recordings = modSamna(batch, record=True)
+        mod_samna.reset_state() # The model maintains an internal state, which will have a negative impact on the model's predictions if not reset
+        out, _, recordings = mod_samna(batch, record=True)
         predictions.extend(out.argmax(1))
         targets.extend(target.cpu().numpy())
 
